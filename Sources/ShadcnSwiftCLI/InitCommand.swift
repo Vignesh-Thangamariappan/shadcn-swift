@@ -8,8 +8,8 @@ struct InitCommand: ParsableCommand {
         abstract: "Create components.json in the current directory."
     )
 
-    @Option(name: .long, help: "Path to this registry's registry.json (local path for now).")
-    var registry: String
+    @Option(name: .long, help: "Path to registry.json. Defaults to the copy bundled next to this executable.")
+    var registry: String?
 
     @Option(name: .long, help: "Directory (relative to cwd) components get copied into.")
     var destination: String = "Sources/UI"
@@ -22,7 +22,18 @@ struct InitCommand: ParsableCommand {
             throw ValidationError("\(ProjectConfig.fileName) already exists here.")
         }
 
-        let config = ProjectConfig(registryPath: registry, destination: destination, installed: [])
+        let registryPath: String
+        if let registry {
+            registryPath = registry
+        } else if let found = DefaultRegistryLocation.find() {
+            registryPath = found.path
+        } else {
+            throw ValidationError(
+                "Couldn't find a bundled registry.json next to this executable — pass --registry explicitly."
+            )
+        }
+
+        let config = ProjectConfig(registryPath: registryPath, destination: destination, installed: [])
         try config.save(to: cwd)
         try FileManager.default.createDirectory(
             at: cwd.appendingPathComponent(destination),

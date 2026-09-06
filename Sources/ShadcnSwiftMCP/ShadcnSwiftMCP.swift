@@ -13,7 +13,8 @@ enum ConfigurationError: LocalizedError {
     case missingRegistryPath
 
     var errorDescription: String? {
-        "SHADCN_SWIFT_REGISTRY must be set to the path of registry.json (see README)."
+        "Couldn't find a bundled registry.json next to this executable, and " +
+        "SHADCN_SWIFT_REGISTRY isn't set — point it at the path of registry.json (see README)."
     }
 }
 
@@ -54,10 +55,14 @@ func textResult(_ string: String, isError: Bool = false) -> CallTool.Result {
 @main
 struct ShadcnSwiftMCP {
     static func main() async throws {
-        guard let registryPath = ProcessInfo.processInfo.environment["SHADCN_SWIFT_REGISTRY"] else {
+        let registryURL: URL
+        if let registryPath = ProcessInfo.processInfo.environment["SHADCN_SWIFT_REGISTRY"] {
+            registryURL = URL(fileURLWithPath: registryPath)
+        } else if let found = DefaultRegistryLocation.find() {
+            registryURL = found
+        } else {
             throw ConfigurationError.missingRegistryPath
         }
-        let registryURL = URL(fileURLWithPath: registryPath)
         let registry = try Registry.load(from: registryURL)
         let sourcesRoot = registryURL.deletingLastPathComponent().appendingPathComponent("swiftui")
 

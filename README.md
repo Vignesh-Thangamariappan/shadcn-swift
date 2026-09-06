@@ -81,57 +81,56 @@ The registry is platform-keyed from day one:
 so adding Kotlin later means filling in `compose` entries and a second
 CLI/MCP reading the same JSON — not a fork of the registry.
 
-## Building
+## Installation
 
-**Prebuilt (fastest):** grab `shadcn-swift-macos-universal.tar.gz` from the
-[latest release](https://github.com/Vignesh-Thangamariappan/shadcn-swift/releases/latest) —
-a universal (arm64 + x86_64) binary for both tools, built and verified by
-`.github/workflows/release.yml` on every `v*` tag.
+Download once — both tools auto-discover `registry.json` with zero flags
+as long as they stay next to it, the same way the repo ships them:
 
 ```bash
-tar -xzf shadcn-swift-macos-universal.tar.gz
-mv shadcn-swift shadcn-swift-mcp /usr/local/bin/
+mkdir -p ~/.local/share/shadcn-swift
+curl -L https://github.com/Vignesh-Thangamariappan/shadcn-swift/releases/latest/download/shadcn-swift-macos-universal.tar.gz \
+  | tar -xz -C ~/.local/share/shadcn-swift
+echo 'export PATH="$HOME/.local/share/shadcn-swift:$PATH"' >> ~/.zshrc && source ~/.zshrc
 ```
 
-**From source:**
+From source instead:
 
 ```bash
+git clone https://github.com/Vignesh-Thangamariappan/shadcn-swift.git && cd shadcn-swift
 swift build -c release
-cp .build/release/shadcn-swift .build/release/shadcn-swift-mcp /usr/local/bin/
+export PATH="$PWD/.build/release:$PATH"   # add to your shell profile to persist
 ```
 
-(Or skip the copy and invoke `swift run shadcn-swift ...` / `swift run
-shadcn-swift-mcp` from inside this repo — slower per-call, no install step.
-This is also the whole SPM story: `swift build`/`swift test` are what
-`.github/workflows/ci.yml` runs on every push, so "does this still work as
-a plain Swift package" is checked continuously, not just at release time —
-there's no separate SPM-specific pipeline because there's nothing
-SPM-specific left to validate beyond that.)
+Either way: **don't** move the binaries away from the `registry/`
+directory they ship beside (or, from source, out of the repo they were
+built in) — that sibling relationship is what lets `shadcn-swift`
+and `shadcn-swift-mcp` find `registry.json` with no `--registry` flag or
+`SHADCN_SWIFT_REGISTRY` env var. Point either one at a different
+`registry.json` explicitly if you ever need to. `.github/workflows/ci.yml`
+runs `swift build`/`swift test` on every push, so "does this still work as
+a plain Swift package" is checked continuously, not just at release time.
 
 ## Quick start
 
 ```bash
 cd /path/to/your/app
-shadcn-swift init --registry /path/to/shadcn-swift/registry/registry.json
+shadcn-swift init
 shadcn-swift add card   # pulls tokens + button too, dependencies first
 ```
 
-Or point a coding agent at it instead of running the CLI yourself — three
-read-only MCP tools (`list_components`, `get_component`, `resolve_plan`, no
-write tool on purpose — same as shadcn/ui's own MCP server, whose real
-tools are read-only too despite its marketing page; see
-[`docs/USAGE.md`](docs/USAGE.md) for the comparison):
+Or hand it to a coding agent instead of running the CLI yourself —
+one line to register it with Claude Code:
 
-```json
-{
-  "mcpServers": {
-    "shadcn-swift": {
-      "command": "/usr/local/bin/shadcn-swift-mcp",
-      "env": { "SHADCN_SWIFT_REGISTRY": "/path/to/shadcn-swift/registry/registry.json" }
-    }
-  }
-}
+```bash
+claude mcp add shadcn-swift -- shadcn-swift-mcp
 ```
+
+(A different MCP client: the equivalent of `{"command": "shadcn-swift-mcp"}`
+— see [`docs/USAGE.md`](docs/USAGE.md).) Three read-only tools
+(`list_components`, `get_component`, `resolve_plan`, no write tool on
+purpose — same as shadcn/ui's own MCP server, whose real tools are
+read-only too despite its marketing page; see
+[`docs/USAGE.md`](docs/USAGE.md) for the comparison).
 
 Full walkthrough, every flag, the agent's read-then-write flow, and a call
 site for each component: **[`docs/USAGE.md`](docs/USAGE.md)**.

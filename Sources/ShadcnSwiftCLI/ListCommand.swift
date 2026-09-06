@@ -8,12 +8,23 @@ struct ListCommand: ParsableCommand {
         abstract: "List components available in a registry."
     )
 
-    @Option(name: .long, help: "Path to registry.json.")
-    var registry: String
+    @Option(name: .long, help: "Path to registry.json. Defaults to the copy bundled next to this executable.")
+    var registry: String?
 
     func run() throws {
         let cwd = URL(fileURLWithPath: FileManager.default.currentDirectoryPath)
-        let registryURL = URL(fileURLWithPath: registry, relativeTo: cwd)
+
+        let registryURL: URL
+        if let registry {
+            registryURL = URL(fileURLWithPath: registry, relativeTo: cwd)
+        } else if let found = DefaultRegistryLocation.find() {
+            registryURL = found
+        } else {
+            throw ValidationError(
+                "Couldn't find a bundled registry.json next to this executable — pass --registry explicitly."
+            )
+        }
+
         let reg = try Registry.load(from: registryURL)
 
         for component in reg.components {

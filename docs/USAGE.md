@@ -4,20 +4,36 @@ This walks through consuming shadcn-swift from a real iOS app project, both by
 hand (CLI) and from a coding agent (MCP), then shows every component that
 exists today.
 
-## 1. Build the tools once
+## 1. Install the tools once
 
-Prebuilt universal binaries (arm64 + x86_64) are attached to every
-[release](https://github.com/Vignesh-Thangamariappan/shadcn-swift/releases/latest) —
-download `shadcn-swift-macos-universal.tar.gz`, `tar -xzf` it, and move
-both `shadcn-swift` and `shadcn-swift-mcp` onto your `PATH`. That's the
-fast path; skip to §2 once they're installed.
-
-Building from source instead:
+Prebuilt universal binaries (arm64 + x86_64), with `registry/` bundled
+right next to them, are attached to every
+[release](https://github.com/Vignesh-Thangamariappan/shadcn-swift/releases/latest):
 
 ```bash
-cd /path/to/shadcn-swift
+mkdir -p ~/.local/share/shadcn-swift
+curl -L https://github.com/Vignesh-Thangamariappan/shadcn-swift/releases/latest/download/shadcn-swift-macos-universal.tar.gz \
+  | tar -xz -C ~/.local/share/shadcn-swift
+echo 'export PATH="$HOME/.local/share/shadcn-swift:$PATH"' >> ~/.zshrc && source ~/.zshrc
+```
+
+**Keep the binaries and `registry/` together** — both tools look for a
+`registry/registry.json` sitting next to wherever they're actually
+running from (following symlinks), and fall back to a Homebrew-style
+`../share/shadcn-swift/registry/registry.json` layout, before giving up
+and requiring an explicit `--registry` / `SHADCN_SWIFT_REGISTRY`. Move
+just the binary out of `~/.local/share/shadcn-swift/` (e.g. copying it
+alone into `/usr/local/bin`) and that auto-discovery breaks — symlink it
+there instead if you want it on a different `PATH` entry, don't copy it.
+
+Building from source instead — no extra step needed, since the built
+binary sits inside the repo it was built from and finds the repo-root
+`registry/` the same way:
+
+```bash
+git clone https://github.com/Vignesh-Thangamariappan/shadcn-swift.git && cd shadcn-swift
 swift build -c release
-cp .build/release/shadcn-swift .build/release/shadcn-swift-mcp /usr/local/bin/
+export PATH="$PWD/.build/release:$PATH"   # add to your shell profile to persist
 ```
 
 ## 2. Wire up a consumer project (CLI)
@@ -25,14 +41,15 @@ cp .build/release/shadcn-swift .build/release/shadcn-swift-mcp /usr/local/bin/
 From your app's repo root (wherever `Sources/` or your Xcode project lives):
 
 ```bash
-shadcn-swift init --registry /path/to/shadcn-swift/registry/registry.json
+shadcn-swift init
 ```
 
-This writes `components.json` (tracks what's installed — don't hand-edit the
+No `--registry` flag needed — it's found automatically per §1. This
+writes `components.json` (tracks what's installed — don't hand-edit the
 `installed` array) and creates `Sources/UI/`. See what's available:
 
 ```bash
-shadcn-swift list --registry /path/to/shadcn-swift/registry/registry.json
+shadcn-swift list
 ```
 
 ```
@@ -73,29 +90,40 @@ Already-installed components are skipped on a re-run — safe to call `add`
 again from a script or CI without duplicating work. Pass `--force` to
 re-copy and overwrite (you'll lose any hand-edits to that component).
 
-`init --registry` accepts a relative or absolute path; whatever you pass is
-what lands in `components.json`. A path relative to the consumer project
-(e.g. `../shadcn-swift/registry/registry.json`) travels with a clone of that
-project — an absolute path (as in the examples above) does not, so if you
-commit `components.json`, know that the `registryPath` field is then
-machine-local unless every clone has this repo at the same absolute path.
+Pointing at a different registry (a fork, a local dev copy with
+in-progress changes) is still `--registry <path>` on `init`/`list` — a
+relative or absolute path, your choice. Whatever you pass is what lands
+in `components.json`; a path relative to the consumer project (e.g.
+`../shadcn-swift/registry/registry.json`) travels with a clone of that
+project, an absolute one doesn't, so if you commit `components.json`,
+know that an absolute `registryPath` is then machine-local unless every
+clone has that registry at the same absolute path.
 
 ## 3. Wire up a consumer project (MCP / agent)
 
-Add to the project's `.mcp.json` (or your agent's MCP config):
+One line, for Claude Code:
+
+```bash
+claude mcp add shadcn-swift -- shadcn-swift-mcp
+```
+
+No `-e SHADCN_SWIFT_REGISTRY=...` needed — same auto-discovery as the CLI
+(§1). For another MCP client, the equivalent of:
 
 ```json
 {
   "mcpServers": {
     "shadcn-swift": {
-      "command": "/usr/local/bin/shadcn-swift-mcp",
-      "env": {
-        "SHADCN_SWIFT_REGISTRY": "/path/to/shadcn-swift/registry/registry.json"
-      }
+      "command": "shadcn-swift-mcp"
     }
   }
 }
 ```
+
+(`command` needs either a bare name resolvable on `PATH`, as above, or an
+absolute path if you haven't put `~/.local/share/shadcn-swift` on `PATH` —
+either way, don't add an `env` block unless you're deliberately pointing
+at a different registry than the one bundled alongside the binary.)
 
 An agent's flow, mirroring what the CLI does internally:
 

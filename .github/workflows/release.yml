@@ -28,12 +28,19 @@ jobs:
       - name: Build universal (arm64 + x86_64) release binaries
         run: swift build -c release --arch arm64 --arch x86_64
 
+      # registry/ ships INSIDE the tarball, next to the binaries -- this is
+      # what lets `shadcn-swift init`/`list` and shadcn-swift-mcp work with
+      # zero flags/env vars once extracted (DefaultRegistryLocation looks
+      # for exactly this layout). Only registry.json + registry/swiftui/
+      # are needed at runtime -- the rest of the repo (Sources/, Tests/,
+      # Scripts/) is dev-only, not part of what a consumer needs.
       - name: Package
         run: |
           mkdir -p dist
           cp .build/apple/Products/Release/shadcn-swift dist/
           cp .build/apple/Products/Release/shadcn-swift-mcp dist/
-          tar -czf shadcn-swift-macos-universal.tar.gz -C dist shadcn-swift shadcn-swift-mcp
+          cp -R registry dist/registry
+          tar -czf shadcn-swift-macos-universal.tar.gz -C dist shadcn-swift shadcn-swift-mcp registry
 
       # Uses the gh CLI directly (already on every GitHub-hosted runner)
       # rather than a third-party release action -- same "no third-party
