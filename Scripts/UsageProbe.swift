@@ -11,6 +11,12 @@ struct UsageProbe: View {
     @State private var isChecked = false
     @State private var radioSelection = "a"
     @State private var tab = "profile"
+    @State private var plan = "pro"
+    @State private var comboSelection = ""
+    @State private var showSheet = false
+    @State private var showDialog = false
+    @State private var showPopover = false
+    @State private var showConfirm = false
 
     var body: some View {
         VStack {
@@ -39,6 +45,26 @@ struct UsageProbe: View {
             ) { selected in
                 Text("Content for \(selected)")
             }
+
+            UI.Select(selection: $plan, options: ["free", "pro", "team"]) { $0.capitalized }
+            UI.DropdownMenu("Options", items: [
+                UI.MenuItem("Edit", systemImage: "pencil", action: {}),
+                UI.MenuItem("Delete", systemImage: "trash", isDestructive: true, action: {})
+            ])
+            UI.Combobox("Framework", options: ["SwiftUI", "UIKit"], selection: $comboSelection)
+
+            Text("Sheet trigger")
+                .uiSheet(isPresented: $showSheet) { Text("Sheet content") }
+            Text("Dialog trigger")
+                .uiDialog(isPresented: $showDialog) { Text("Dialog content") }
+            Text("Popover trigger")
+                .uiPopover(isPresented: $showPopover) { Text("Popover content") }
+            Text("Confirm trigger")
+                .uiConfirmationDialog(isPresented: $showConfirm, title: "Are you sure?", onConfirm: {})
+            Image(systemName: "info.circle")
+                .uiTooltip("Tooltip text")
+            Text("Long-press for context menu")
+                .uiContextMenu([UI.MenuItem("Edit", action: {})])
         }
     }
 }

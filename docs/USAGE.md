@@ -34,13 +34,13 @@ button  (needs: tokens)
   Primary/secondary/ghost button style
 card  (needs: tokens, button)
   Card container with optional trailing action button
-badge  (needs: tokens)
-  Small status/label pill (primary/secondary/outline)
-input  (needs: tokens)
-  Styled text field with focus ring and an invalid/error state
-toggle  (needs: tokens)
-  Themed on/off switch (custom ToggleStyle)
+context-menu  (needs: tokens, dropdown-menu)
+  Themed wrapper over native .contextMenu, reusing dropdown-menu's item model
+...
 ```
+
+(25 components today, not all shown here — this list changes; `shadcn-swift
+list` is the source of truth, and section 4 below has a call site for each.)
 
 Add what you need — dependencies come along automatically:
 
@@ -271,6 +271,99 @@ UI.Tabs(
     }
 }
 ```
+
+### Select
+
+```swift
+@State private var plan = "pro"
+
+UI.Select(selection: $plan, options: ["free", "pro", "team"]) { $0.capitalized }
+```
+
+### DropdownMenu
+
+```swift
+UI.DropdownMenu("Options", items: [
+    UI.MenuItem("Edit", systemImage: "pencil", action: { edit() }),
+    UI.MenuItem("Delete", systemImage: "trash", isDestructive: true, action: { delete() })
+])
+```
+
+### Combobox
+
+Self-contained — owns its own sheet + search internally, no external
+`Binding<Bool>` to manage:
+
+```swift
+@State private var framework = ""
+
+UI.Combobox("Select framework", options: ["SwiftUI", "UIKit", "Compose"], selection: $framework)
+```
+
+### Sheet, Dialog, Popover, ConfirmationDialog — presentation modifiers
+
+These four apply to a trigger view you already have, driven by an external
+`Binding<Bool>` — same shape as `.sheet(isPresented:)`, just themed and
+`ui`-prefixed:
+
+```swift
+@State private var showSheet = false
+@State private var showDialog = false
+@State private var showPopover = false
+@State private var showConfirm = false
+
+Button("Open sheet") { showSheet = true }
+    .uiSheet(isPresented: $showSheet) {
+        Text("Sheet content")
+    }
+
+Button("Delete") { showDialog = true }
+    .uiDialog(isPresented: $showDialog) {
+        VStack(spacing: 12) {
+            Text("Delete project?").font(.headline)
+            Text("This action can't be undone.")
+        }
+    }
+
+Button("Info") { showPopover = true }
+    .uiPopover(isPresented: $showPopover) {
+        Text("Popover content").frame(width: 200)
+    }
+
+Button("Delete") { showConfirm = true }
+    .uiConfirmationDialog(
+        isPresented: $showConfirm,
+        title: "Delete this item?",
+        message: "This can't be undone.",
+        confirmTitle: "Delete",
+        isDestructive: true,
+        onConfirm: { delete() }
+    )
+```
+
+`uiDialog` uses `.fullScreenCover` under the hood (real modal semantics and
+accessibility focus trapping) rather than a custom overlay — see the
+deviation note in `dialog/Dialog.swift` for why a hand-rolled `.overlay`
+version is the wrong call here. `uiPopover` forces
+`.presentationCompactAdaptation(.popover)` so it stays a popover on iPhone
+instead of silently becoming a sheet.
+
+### Tooltip, ContextMenu — gesture-driven, no external binding
+
+```swift
+Image(systemName: "info.circle")
+    .uiTooltip("This explains what the icon means")
+
+RowView(item)
+    .uiContextMenu([
+        UI.MenuItem("Edit", systemImage: "pencil", action: { edit(item) }),
+        UI.MenuItem("Delete", systemImage: "trash", isDestructive: true, action: { delete(item) })
+    ])
+```
+
+Both trigger on a gesture (long-press) rather than a binding you control, so
+— unlike the four above — their `#Preview` can only show the trigger at
+rest; long-press on a real device or simulator to see the revealed content.
 
 ## 5. Seeing a component before you write any code
 

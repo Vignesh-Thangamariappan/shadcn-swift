@@ -161,6 +161,96 @@
           "files": ["Tabs.swift"]
         }
       }
+    },
+    {
+      "name": "sheet",
+      "description": "Themed wrapper over native .sheet — drag indicator, medium/large detents",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Sheet.swift"]
+        }
+      }
+    },
+    {
+      "name": "confirmation-dialog",
+      "description": "Themed wrapper over native .confirmationDialog — confirm/cancel, optional destructive role",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["ConfirmationDialog.swift"]
+        }
+      }
+    },
+    {
+      "name": "select",
+      "description": "Themed single-value picker (menu style) over any Hashable option type",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Select.swift"]
+        }
+      }
+    },
+    {
+      "name": "dropdown-menu",
+      "description": "Themed action menu (native Menu) with an icon/title/destructive item model",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["DropdownMenu.swift"]
+        }
+      }
+    },
+    {
+      "name": "combobox",
+      "description": "Searchable single-select presented in its own sheet — self-contained, no external binding",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Combobox.swift"]
+        }
+      }
+    },
+    {
+      "name": "dialog",
+      "description": "Centered modal card over a scrim, via fullScreenCover for real modal semantics and focus trapping",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Dialog.swift"]
+        }
+      }
+    },
+    {
+      "name": "popover",
+      "description": "Themed wrapper over native .popover, forced to stay a popover on iPhone via presentationCompactAdaptation",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Popover.swift"]
+        }
+      }
+    },
+    {
+      "name": "tooltip",
+      "description": "Long-press-revealed text popover (touch analog of hover)",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Tooltip.swift"]
+        }
+      }
+    },
+    {
+      "name": "context-menu",
+      "description": "Themed wrapper over native .contextMenu, reusing dropdown-menu's item model",
+      "dependencies": ["tokens", "dropdown-menu"],
+      "platforms": {
+        "swiftui": {
+          "files": ["ContextMenu.swift"]
+        }
+      }
     }
   ]
 }

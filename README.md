@@ -26,11 +26,15 @@ in your app module would shadow `SwiftUI.Button` **everywhere**, silently
 changing every existing `Button(action:)` call site in the app.
 
 Every component here is namespaced under a single `UI` enum instead
-(`UI.Button`, `UI.Card`, ...). It composes cleanly across separately-copied
-files (each just extends `UI`) and sits at a call site next to a real `Button`
-with zero ambiguity. That claim isn't just asserted — `Scripts/UsageProbe.swift`
-calls both side by side, and `Scripts/verify-components.sh` typechecks it
-against the real iOS SDK on every change:
+(`UI.Button`, `UI.Card`, ...), and every presentation modifier (`.uiSheet`,
+`.uiDialog`, ...) carries a `ui` prefix for the same reason — a bare
+`.sheet`-named extension would risk overload ambiguity against the real
+`.sheet(isPresented:)`. Types under `UI`, modifiers under `ui`: that's the
+whole naming rule. It composes cleanly across separately-copied files (each
+just extends `UI`) and sits at a call site next to a real `Button` with zero
+ambiguity. That claim isn't just asserted — `Scripts/UsageProbe.swift` calls
+both side by side, and `Scripts/verify-components.sh` typechecks it against
+the real iOS SDK on every change:
 
 ```swift
 Button("plain SwiftUI button") {}   // SwiftUI's own
@@ -119,24 +123,36 @@ environment-injected `UI.Theme` standing in for Tailwind's CSS variables
 (colors, spacing, radius, typography, plus a `destructive` color — override
 via `.uiTheme(_:)`).
 
-**16 components today**, all view-shaped (no overlays/portals yet — see
-below): `tokens`, `button`, `card`, `badge`, `input`, `toggle`, `label`,
-`separator`, `avatar`, `progress`, `skeleton`, `checkbox`, `radio-group`,
-`alert`, `textarea`, `tabs`. See [`docs/USAGE.md`](docs/USAGE.md) for a call
-site for each. `Scripts/UsageProbe.swift` exercises all of them, several
-right next to their real SwiftUI counterparts (`Button`, `Toggle`) or a
-same-named SwiftUI type (`Alert`, `Label`), to keep proving the
-no-shadowing claim as the set grows.
+**25 components today.** 16 plain views: `tokens`, `button`, `card`, `badge`,
+`input`, `toggle`, `label`, `separator`, `avatar`, `progress`, `skeleton`,
+`checkbox`, `radio-group`, `alert`, `textarea`, `tabs`. Plus the
+overlay/portal wave — 3 more self-contained views whose own internal state
+dissolves the portal problem (`select`, `dropdown-menu`, `combobox`), and 6
+`ui`-prefixed presentation modifiers applied to a trigger view you already
+have (`sheet`, `confirmation-dialog`, `dialog`, `popover`, `tooltip`,
+`context-menu`). See [`docs/USAGE.md`](docs/USAGE.md) for a call site for
+each. `Scripts/UsageProbe.swift` exercises all of them, several right next
+to their real SwiftUI counterparts (`Button`, `Toggle`) or a same-named
+SwiftUI type (`Alert`, `Label`), to keep proving the no-shadowing claim as
+the set grows.
 
-**Not yet:** the overlay/menu/selection set — dialog, sheet, alert-dialog,
-popover, dropdown-menu, select, combobox, tooltip, context-menu, hover-card.
-SwiftUI has no `Radix.Portal` equivalent, so each of those needs a real
-design decision (sheet vs. `.overlay` vs. a presentation `ViewModifier`)
-before it can follow the plain-`View` pattern the 16 above use — that's
-deliberately a second wave, not an oversight. Also not yet: a remote registry
-(today `--registry` / `SHADCN_SWIFT_REGISTRY` are local paths), configurable
-namespace (the `UI` name is currently baked into the vendored source, not
-templated), and anything Kotlin/Compose.
+Two design calls worth knowing before you reach for these:
+- **`dialog` uses `.fullScreenCover`**, not a custom `.overlay` scrim. The
+  overlay version is the naive port and it's wrong in three specific ways —
+  see the deviation note at the top of `dialog/Dialog.swift`.
+- **`popover` and `tooltip` force `.presentationCompactAdaptation(.popover)`.**
+  Without it, `.popover` silently degrades to a full sheet on iPhone's
+  compact width — a runtime behavior difference a typecheck can't catch,
+  since both forms compile fine.
+
+**Deliberately skipped: `hover-card`.** iOS has no cursor-hover concept on a
+touch device, so there's no honest port — `tooltip` (long-press) or
+`popover` cover what a hover-card would have been used for. This is a
+platform gap, not a TODO.
+
+**Not yet:** a remote registry (today `--registry` / `SHADCN_SWIFT_REGISTRY`
+are local paths), configurable namespace (the `UI` name is currently baked
+into the vendored source, not templated), and anything Kotlin/Compose.
 
 **Invariant to keep, and to lint for once there are more components:** no
 vendored file under `registry/swiftui/` may `import` anything but
