@@ -127,3 +127,13 @@ struct UsageProbe: View {
         }
     }
 }
+
+private struct SidebarProbe: View {
+    @State private var selection: UI.SidebarItem.ID?
+
+    var body: some View {
+        UI.Sidebar("Mail", items: [UI.SidebarItem("inbox", title: "Inbox", systemImage: "tray")], selection: $selection) { _ in
+            Text("Detail")
+        }
+    }
+}

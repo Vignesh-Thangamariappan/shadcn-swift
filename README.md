@@ -126,12 +126,12 @@ environment-injected `UI.Theme` standing in for Tailwind's CSS variables —
 `mutedForeground`, `accent`/`accentForeground`, `input`, `ring`), spacing,
 radius, and typography — override via `.uiTheme(_:)`.
 
-**46 components today.** 34 plain views: `tokens`, `button`, `card`,
+**47 components today.** 35 plain views: `tokens`, `button`, `card`,
 `badge`, `input`, `switch`, `toggle`, `label`, `separator`, `avatar`,
 `progress`, `skeleton`, `checkbox`, `radio-group`, `alert`, `textarea`,
 `tabs`, `slider`, `spinner`, `kbd`, `collapsible`, `toggle-group`, `empty`,
 `breadcrumb`, `input-otp`, `field`, `item`, `input-group`, `accordion`,
-`pagination`, `calendar`, `carousel`, `table`, `chart`, plus the
+`pagination`, `calendar`, `carousel`, `table`, `chart`, `sidebar`, plus the
 passthrough `aspect-ratio` modifier. Plus the overlay/portal wave — 5 more
 self-contained views whose own internal state dissolves the portal problem
 (`select`, `dropdown-menu`, `combobox`, `command`, `date-picker`), and 6
@@ -203,6 +203,25 @@ supports multiple/range modes, not built here.
   extend `ChartStyle` in that file rather than adding chart-type-specific
   registry components.
 
+**`sidebar` was reconsidered rather than skipped.** It was originally in
+the platform-gap bucket ("doesn't map to iPhone"), but that's true of
+iPhone specifically, not iOS/iPadOS as a whole — iPad's regular width
+class genuinely supports a persistent nav rail. `UI.Sidebar` wraps native
+`NavigationSplitView` rather than reimplementing collapse behavior by
+hand: a persistent column on iPad, a normal push-navigation stack on
+iPhone's compact width, both for free. Its shipped code has zero
+functional dependency on `label` despite `Sidebar.swift`'s doc comment
+mentioning `UI.Label` — that comment is a maintainer-facing warning (this
+registry's own `verify-components.sh` typechecks all 47 files together,
+where the collision is real), not a redistribution requirement, so
+`sidebar`'s only registry dependency is `tokens`. Confirmed the hazard
+anyway, same rigor as `UI.Calendar`/`UI.Chart`: a bare `Label(title,
+systemImage:)` inside `UI.Sidebar`'s own body resolves to the enclosing
+`UI.Label` (single-`String` init) instead of `SwiftUI.Label`, failing with
+`error: extra argument 'systemImage' in call`. Scope: single-level
+navigation only — shadcn's Sidebar also supports nested/collapsible
+groups, not built here.
+
 `input-otp` is worth a callout: SwiftUI has no per-character-box text
 input, so it uses the standard workaround — a real `TextField` at ~0.01
 opacity sits under the visible digit boxes and actually captures keyboard
@@ -266,9 +285,9 @@ one deliberate non-build and a platform-gap bucket:
   so there's no distinct component to build here.
 - **Platform-gap candidates, same call as `hover-card`:**
   `navigation-menu`/`menubar` (no persistent top-menu-bar paradigm on
-  iOS), `sidebar` (doesn't map to iPhone), `resizable` (a mouse-drag
-  concept), `scroll-area` (`ScrollView` already covers this with little
-  to add). `hover-card` itself: deliberately skipped, not missing — iOS has no
+  iOS), `resizable` (a mouse-drag concept), `scroll-area` (`ScrollView`
+  already covers this with little to add). `hover-card` itself:
+  deliberately skipped, not missing — iOS has no
 cursor-hover concept on a touch device, so there's no honest port;
 `tooltip` (long-press) or `popover` cover what it would have been used for.
 

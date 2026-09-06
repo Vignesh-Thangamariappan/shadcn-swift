@@ -39,7 +39,7 @@ context-menu  (needs: tokens, dropdown-menu)
 ...
 ```
 
-(46 components today, not all shown here — this list changes; `shadcn-swift
+(47 components today, not all shown here — this list changes; `shadcn-swift
 list` is the source of truth, and section 4 below has a call site for each.)
 
 Add what you need — dependencies come along automatically:
@@ -518,6 +518,37 @@ let data = [
 UI.Chart(data: data)               // bar, the default
 UI.Chart(data: data, style: .line)
 ```
+
+### Sidebar
+
+Wraps native `NavigationSplitView` — a persistent nav rail on iPad's
+regular width class, a normal push-navigation stack on iPhone's compact
+width, both automatic:
+
+```swift
+@State private var selection: UI.SidebarItem.ID?
+
+let items = [
+    UI.SidebarItem("inbox", title: "Inbox", systemImage: "tray"),
+    UI.SidebarItem("sent", title: "Sent", systemImage: "paperplane"),
+    UI.SidebarItem("settings", title: "Settings", systemImage: "gearshape")
+]
+
+UI.Sidebar("Mail", items: items, selection: $selection) { selected in
+    switch selected {
+    case "inbox": InboxView()
+    case "sent": SentView()
+    case "settings": SettingsView()
+    default: Text("Select an item").foregroundStyle(.secondary)
+    }
+}
+```
+
+Single-level navigation only — no nested/collapsible groups. See the
+shadowing note at the top of `sidebar/Sidebar.swift` if you're adding a
+new nav row type: this file sits alongside `UI.Label` (the `label`
+component) in this registry, so `Label(_:systemImage:)` must stay
+qualified `SwiftUI.Label`.
 
 ### Label
 

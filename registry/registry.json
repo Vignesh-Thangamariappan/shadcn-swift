@@ -461,6 +461,16 @@
           "files": ["Chart.swift"]
         }
       }
+    },
+    {
+      "name": "sidebar",
+      "description": "Persistent nav rail + detail pane via native NavigationSplitView (iPad-shaped; degrades to push-navigation on iPhone)",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Sidebar.swift"]
+        }
+      }
     }
   ]
 }
