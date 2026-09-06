@@ -411,6 +411,16 @@
           "files": ["Command.swift"]
         }
       }
+    },
+    {
+      "name": "calendar",
+      "description": "Month-grid single-date picker with prev/next navigation and disabled-date support",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Calendar.swift"]
+        }
+      }
     }
   ]
 }

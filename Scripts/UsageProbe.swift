@@ -26,6 +26,7 @@ struct UsageProbe: View {
     @State private var accordionExpanded: Set<String> = ["a"]
     @State private var page = 2
     @State private var showCommand = false
+    @State private var selectedDate: Date? = Date()
 
     var body: some View {
         VStack {
@@ -111,6 +112,8 @@ struct UsageProbe: View {
                 .uiCommand(isPresented: $showCommand, groups: [
                     UI.CommandGroup(items: [UI.CommandItem("New file", action: {})])
                 ])
+
+            UI.Calendar(selection: $selectedDate)
         }
     }
 }

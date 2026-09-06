@@ -39,7 +39,7 @@ context-menu  (needs: tokens, dropdown-menu)
 ...
 ```
 
-(41 components today, not all shown here — this list changes; `shadcn-swift
+(42 components today, not all shown here — this list changes; `shadcn-swift
 list` is the source of truth, and section 4 below has a call site for each.)
 
 Add what you need — dependencies come along automatically:
@@ -434,6 +434,28 @@ MyToolbarButton(action: { showCommand = true })
         ])
     ])
 ```
+
+### Calendar
+
+Single-date selection, month-grid, locale-aware first weekday. An optional
+predicate disables specific dates — here, weekends:
+
+```swift
+@State private var selectedDate: Date? = Date()
+
+UI.Calendar(selection: $selectedDate) { date in
+    Calendar.current.isDateInWeekend(date)
+}
+```
+
+Range/multiple selection aren't supported yet — single date only. See the
+`Foundation.Calendar` qualification note at the top of
+`calendar/Calendar.swift` if you're editing this file: nearly every
+internal helper needs Foundation's `Calendar` for month math, and an
+unqualified `Calendar` reference inside `UI.Calendar`'s own body resolves
+to itself, not Foundation's type (confirmed — it fails with `error: type
+'UI.Calendar' has no member 'current'`, a loud compile error rather than a
+silent wrong-behavior bug).
 
 ### Label
 

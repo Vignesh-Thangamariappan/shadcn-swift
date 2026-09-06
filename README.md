@@ -126,12 +126,13 @@ environment-injected `UI.Theme` standing in for Tailwind's CSS variables —
 `mutedForeground`, `accent`/`accentForeground`, `input`, `ring`), spacing,
 radius, and typography — override via `.uiTheme(_:)`.
 
-**41 components today.** 30 plain views: `tokens`, `button`, `card`,
+**42 components today.** 31 plain views: `tokens`, `button`, `card`,
 `badge`, `input`, `switch`, `toggle`, `label`, `separator`, `avatar`,
 `progress`, `skeleton`, `checkbox`, `radio-group`, `alert`, `textarea`,
 `tabs`, `slider`, `spinner`, `kbd`, `collapsible`, `toggle-group`, `empty`,
 `breadcrumb`, `input-otp`, `field`, `item`, `input-group`, `accordion`,
-`pagination`, plus the passthrough `aspect-ratio` modifier. Plus the
+`pagination`, `calendar`, plus the passthrough `aspect-ratio` modifier.
+Plus the
 overlay/portal wave — 4 more self-contained views whose own internal state
 dissolves the portal problem (`select`, `dropdown-menu`, `combobox`,
 `command`), and 6 `ui`-prefixed presentation modifiers applied to a
@@ -150,6 +151,21 @@ components (`item`, `input-group`) needed a same-shape gotcha documented
 in their files: a single-slot convenience initializer (`leading:` only, or
 `trailing:` only) is ambiguous as a bare trailing closure — the compiler
 can't tell which slot you mean without an explicit argument label.
+
+**`calendar` is the first "genuine engineering investment" component** —
+a real month-grid built from scratch (leading/trailing blank cells,
+locale-aware first-weekday and weekday symbols, month navigation, a
+disabled-date predicate), not a thin wrapper. It's also where the `UI`
+namespace's central bet gets stress-tested hardest: `UI.Calendar`'s own
+implementation needs Foundation's `Calendar` for month math constantly, so
+nearly every internal helper writes `Foundation.Calendar` explicitly — the
+same enclosing-scope-wins rule that requires `SwiftUI.Button` inside
+`UI.Button`, just far more pervasive here. Verified this actually bites,
+not just asserted: dropping one qualifier produces `error: type
+'UI.Calendar' has no member 'current'` — a loud compile failure, not
+`UI.Button`'s quieter "compiles fine, means something else." Single-date
+selection only for now; shadcn's Calendar (via react-day-picker) also
+supports multiple/range modes, not built here.
 
 `input-otp` is worth a callout: SwiftUI has no per-character-box text
 input, so it uses the standard workaround — a real `TextField` at ~0.01
@@ -197,14 +213,17 @@ Two design calls worth knowing before you reach for these:
   since both forms compile fine.
 
 **Not yet, coverage-wise** (real shadcn has ~50 registry items, we have
-41): calendar, carousel, chart, data-table, date-picker, drawer, menubar,
+42): carousel, chart, data-table, date-picker, drawer, menubar,
 navigation-menu, resizable, scroll-area, sidebar, table. None of these are
 half-built or mismatched — they're simply not started. The composition-
 primitives bucket (`field`, `item`, `input-group`, `accordion`,
-`pagination`, `command`) is now done. What's left splits into two buckets:
-genuine engineering investment worth deferring until something needs one
-(`carousel`, `calendar`/`date-picker`, `table`/`data-table`, `chart`); and
-likely platform-gap candidates, same call as `hover-card`
+`pagination`, `command`) is done, and `calendar` is the first genuine-
+engineering-investment component to land — `date-picker` is the natural
+next one (trigger button + `.uiPopover` presenting `UI.Calendar`, nearly
+free now that calendar exists). What's left splits into two buckets: real
+engineering investment worth deferring until something needs it
+(`carousel`, `date-picker`, `table`/`data-table`, `chart`); and likely
+platform-gap candidates, same call as `hover-card`
 (`navigation-menu`/`menubar` — no persistent top-menu-bar paradigm on iOS;
 `sidebar` — doesn't map to iPhone; `resizable` — a mouse-drag concept;
 `scroll-area` — `ScrollView` already covers this with little to add).
