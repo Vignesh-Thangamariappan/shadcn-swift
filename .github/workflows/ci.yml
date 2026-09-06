@@ -8,14 +8,15 @@ on:
 
 jobs:
   build-test-verify:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - uses: actions/checkout@v4
 
-      # macos-14's default Xcode ships Swift 5.10; Package.swift needs 6.0+.
-      # Select the newest Xcode already on the runner rather than hardcode
-      # a version (which would go stale as GitHub updates the image) or
-      # pull in a third-party action for this.
+      # A runner's DEFAULT Xcode selection isn't always its newest
+      # installed one, and this package (plus its transitive deps) needs
+      # a recent Swift 6 toolchain. Select the newest Xcode actually on
+      # the runner rather than hardcode a version (goes stale as GitHub
+      # updates the image) or pull in a third-party action for this.
       - name: Select newest available Xcode
         run: sudo xcode-select -s $(ls -d /Applications/Xcode_*.app | sort -V | tail -1)/Contents/Developer
 
