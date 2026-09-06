@@ -39,7 +39,7 @@ context-menu  (needs: tokens, dropdown-menu)
 ...
 ```
 
-(42 components today, not all shown here — this list changes; `shadcn-swift
+(46 components today, not all shown here — this list changes; `shadcn-swift
 list` is the source of truth, and section 4 below has a call site for each.)
 
 Add what you need — dependencies come along automatically:
@@ -456,6 +456,68 @@ unqualified `Calendar` reference inside `UI.Calendar`'s own body resolves
 to itself, not Foundation's type (confirmed — it fails with `error: type
 'UI.Calendar' has no member 'current'`, a loud compile error rather than a
 silent wrong-behavior bug).
+
+### DatePicker
+
+Trigger button showing the formatted date, opens `UI.Calendar` in a
+popover:
+
+```swift
+@State private var date: Date?
+
+UI.DatePicker(selection: $date)
+UI.DatePicker("Due date", selection: $date) { candidate in
+    candidate < Date()   // disable past dates
+}
+```
+
+### Carousel
+
+```swift
+@State private var page = 0
+
+UI.Carousel(selection: $page, itemCount: images.count) { index in
+    Image(images[index]).resizable().scaledToFill()
+}
+```
+
+Pass `height:` if your pages aren't ~200pt tall — `TabView(.page)` needs a
+concrete height, it doesn't measure per-page content.
+
+### Table
+
+Plain header row + body rows — no sort/filter/pagination (that's
+`data-table`, not built; see the README). Row content is your own view,
+same shape as `UI.Tabs`/`UI.Accordion`:
+
+```swift
+UI.Table(
+    columns: [UI.TableColumn("Name"), UI.TableColumn("Status")],
+    rowCount: people.count
+) { index in
+    HStack {
+        Text(people[index].name).frame(maxWidth: .infinity, alignment: .leading)
+        Text(people[index].status).frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+```
+
+### Chart
+
+Requires iOS 16+ (Swift Charts' own minimum). One flexible bar/line chart
+over a single labeled series — see the README for why `import Charts` is
+the one deliberate exception to this registry's package-free rule:
+
+```swift
+let data = [
+    UI.ChartPoint("Mon", value: 12),
+    UI.ChartPoint("Tue", value: 18),
+    UI.ChartPoint("Wed", value: 9)
+]
+
+UI.Chart(data: data)               // bar, the default
+UI.Chart(data: data, style: .line)
+```
 
 ### Label
 

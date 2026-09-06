@@ -421,6 +421,46 @@
           "files": ["Calendar.swift"]
         }
       }
+    },
+    {
+      "name": "date-picker",
+      "description": "Trigger button + popover presenting UI.Calendar, showing the formatted selected date",
+      "dependencies": ["tokens", "calendar"],
+      "platforms": {
+        "swiftui": {
+          "files": ["DatePicker.swift"]
+        }
+      }
+    },
+    {
+      "name": "carousel",
+      "description": "Swipeable paged content over native TabView(.page), with page-dot indicator",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Carousel.swift"]
+        }
+      }
+    },
+    {
+      "name": "table",
+      "description": "Plain styled header row + body rows, no sort/filter (see data-table, not built)",
+      "dependencies": ["tokens", "separator"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Table.swift"]
+        }
+      }
+    },
+    {
+      "name": "chart",
+      "description": "Themed bar/line chart over a single labeled series, built on Apple's Charts framework",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Chart.swift"]
+        }
+      }
     }
   ]
 }

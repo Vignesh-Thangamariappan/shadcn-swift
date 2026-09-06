@@ -27,6 +27,8 @@ struct UsageProbe: View {
     @State private var page = 2
     @State private var showCommand = false
     @State private var selectedDate: Date? = Date()
+    @State private var pickedDate: Date?
+    @State private var carouselPage = 0
 
     var body: some View {
         VStack {
@@ -114,6 +116,14 @@ struct UsageProbe: View {
                 ])
 
             UI.Calendar(selection: $selectedDate)
+            UI.DatePicker(selection: $pickedDate)
+            UI.Carousel(selection: $carouselPage, itemCount: 3) { index in
+                Text("Slide \(index)")
+            }
+            UI.Table(columns: [UI.TableColumn("Name")], rowCount: 1) { _ in
+                Text("Row")
+            }
+            UI.Chart(data: [UI.ChartPoint("A", value: 1), UI.ChartPoint("B", value: 2)])
         }
     }
 }
