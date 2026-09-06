@@ -9,7 +9,10 @@ etc.) discover and read components without ever writing to your project itself.
 
 **New to this repo? Start with [`docs/USAGE.md`](docs/USAGE.md)** — walks
 through wiring up a consumer project both ways, then shows every component
-that exists today with real call sites.
+that exists today with real call sites. **Porting this model to a
+different language/framework? Start with [`docs/SPEC.md`](docs/SPEC.md)**
+instead — the parts of this model that generalize, extracted from what's
+Swift-specific.
 
 ## Why not just make an SPM package?
 
