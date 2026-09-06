@@ -1,0 +1,36 @@
+{
+  "$schema": "https://shadcn-swift.local/schema/registry-v1.json",
+  "version": 1,
+  "components": [
+    {
+      "name": "tokens",
+      "description": "Design tokens (color, spacing, radius, typography) exposed via SwiftUI Environment",
+      "dependencies": [],
+      "platforms": {
+        "swiftui": {
+          "files": ["Theme.swift", "Tokens.swift"]
+        }
+      }
+    },
+    {
+      "name": "button",
+      "description": "Primary/secondary/ghost button style",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Button.swift"]
+        }
+      }
+    },
+    {
+      "name": "card",
+      "description": "Card container with optional trailing action button",
+      "dependencies": ["tokens", "button"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Card.swift"]
+        }
+      }
+    }
+  ]
+}
