@@ -12,6 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # macos-14's default Xcode ships Swift 5.10; Package.swift needs 6.0+.
+      # Select the newest Xcode already on the runner rather than hardcode
+      # a version (which would go stale as GitHub updates the image) or
+      # pull in a third-party action for this.
+      - name: Select newest available Xcode
+        run: sudo xcode-select -s $(ls -d /Applications/Xcode_*.app | sort -V | tail -1)/Contents/Developer
+
       - name: Swift version
         run: swift --version
 
