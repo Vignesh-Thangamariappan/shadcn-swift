@@ -31,6 +31,36 @@
           "files": ["Card.swift"]
         }
       }
+    },
+    {
+      "name": "badge",
+      "description": "Small status/label pill (primary/secondary/outline)",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Badge.swift"]
+        }
+      }
+    },
+    {
+      "name": "input",
+      "description": "Styled text field with focus ring and an invalid/error state",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Input.swift"]
+        }
+      }
+    },
+    {
+      "name": "toggle",
+      "description": "Themed on/off switch (custom ToggleStyle)",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Toggle.swift"]
+        }
+      }
     }
   ]
 }

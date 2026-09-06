@@ -10,6 +10,7 @@ public extension UI.Theme {
         public var background: Color
         public var foreground: Color
         public var border: Color
+        public var destructive: Color
 
         public init(
             primary: Color,
@@ -18,7 +19,8 @@ public extension UI.Theme {
             secondaryForeground: Color,
             background: Color,
             foreground: Color,
-            border: Color
+            border: Color,
+            destructive: Color
         ) {
             self.primary = primary
             self.primaryForeground = primaryForeground
@@ -27,6 +29,7 @@ public extension UI.Theme {
             self.background = background
             self.foreground = foreground
             self.border = border
+            self.destructive = destructive
         }
 
         public static let `default` = Colors(
@@ -36,7 +39,8 @@ public extension UI.Theme {
             secondaryForeground: .primary,
             background: Color(.systemBackground),
             foreground: .primary,
-            border: Color(.separator)
+            border: Color(.separator),
+            destructive: Color(red: 0.86, green: 0.15, blue: 0.15) // #db2626
         )
     }
 

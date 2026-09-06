@@ -7,6 +7,10 @@ You get the model two ways: a **CLI** you run by hand (`shadcn-swift add card`),
 and a **read-only MCP server** that lets a coding agent (Claude Code, Cursor,
 etc.) discover and read components without ever writing to your project itself.
 
+**New to this repo? Start with [`docs/USAGE.md`](docs/USAGE.md)** — walks
+through wiring up a consumer project both ways, then shows every component
+that exists today with real call sites.
+
 ## Why not just make an SPM package?
 
 A package is exactly the thing shadcn/ui opted out of: one version to
@@ -41,7 +45,8 @@ registry/swiftui/<name>/       vendored source for each component (copied into c
 Sources/ShadcnSwiftKit/        shared library: registry model + dependency resolution
 Sources/ShadcnSwiftCLI/        the `shadcn-swift` CLI (init/list/add), built on ShadcnSwiftKit
 Sources/ShadcnSwiftMCP/        the `shadcn-swift-mcp` read-only MCP server, built on ShadcnSwiftKit
-Scripts/verify-components.sh   typechecks every registry component + UsageProbe.swift against the iOS SDK
+Scripts/verify-components.sh   typechecks every registry/swiftui/**/*.swift + UsageProbe.swift against the iOS SDK
+docs/USAGE.md                  walkthrough: wiring up a consumer project, then every component with call sites
 ```
 
 `ShadcnSwiftKit` exists so the CLI and the MCP server share one dependency
@@ -122,18 +127,28 @@ Point it at a registry via the `SHADCN_SWIFT_REGISTRY` environment variable
 
 ## What's here vs. what's next
 
-**Here (MVP, proven):** registry schema, dependency resolution
-(`tokens` ← `button` ← `card`, verified in `RegistryResolutionTests` and live
-over the wire via `resolve_plan`), the `UI` namespace pattern, the CLI
+**Here (proven):** registry schema, dependency resolution (`tokens` ←
+`button` ← `card`, verified in `RegistryResolutionTests` and live over the
+wire via `resolve_plan`), the `UI` namespace pattern, the CLI
 (`init`/`add`/`list`), the MCP server (`list_components`/`get_component`/
 `resolve_plan`, checked with a real stdio JSON-RPC round trip), and an
 environment-injected `UI.Theme` standing in for Tailwind's CSS variables
-(colors, spacing, radius, typography — override via `.uiTheme(_:)`).
+(colors, spacing, radius, typography, plus a `destructive` color — override
+via `.uiTheme(_:)`).
 
-**Not yet:** a real component set beyond the three proof-of-concept pieces, a
-remote registry (today `--registry` / `SHADCN_SWIFT_REGISTRY` are local
-paths), configurable namespace (the `UI` name is currently baked into the
-vendored source, not templated), and anything Kotlin/Compose.
+**Six components today:** `tokens`, `button`, `card`, `badge`, `input`
+(styled `TextField`/`SecureField` with a focus ring and an invalid/error
+state), `toggle` (custom `ToggleStyle`, not `.tint()`). See
+[`docs/USAGE.md`](docs/USAGE.md) for call sites. `Scripts/UsageProbe.swift`
+exercises all of them side by side with their real SwiftUI counterparts
+(`Button`, `Toggle`) to keep proving the no-shadowing claim as the set grows.
+
+**Not yet:** a bigger component set (dialog/sheet, select, alert — these are
+presentation modifiers, not plain views, so they need a registry-shape
+decision before copying the current pattern), a remote registry (today
+`--registry` / `SHADCN_SWIFT_REGISTRY` are local paths), configurable
+namespace (the `UI` name is currently baked into the vendored source, not
+templated), and anything Kotlin/Compose.
 
 **Invariant to keep, and to lint for once there are more components:** no
 vendored file under `registry/swiftui/` may `import` anything but
