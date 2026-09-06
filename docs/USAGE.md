@@ -39,7 +39,7 @@ context-menu  (needs: tokens, dropdown-menu)
 ...
 ```
 
-(35 components today, not all shown here — this list changes; `shadcn-swift
+(41 components today, not all shown here — this list changes; `shadcn-swift
 list` is the source of truth, and section 4 below has a call site for each.)
 
 Add what you need — dependencies come along automatically:
@@ -319,6 +319,121 @@ UI.InputOTP(length: 6, code: $code)
 Backed by a real (near-invisible) `TextField`, so the system keyboard,
 autofill, and SMS one-time-code suggestions all work normally — see the
 deviation note in `input-otp/InputOTP.swift`.
+
+### Field
+
+Label + control + description-or-error as one unit. Generic over any
+control — wraps `UI.Input` here, but works the same with `UI.TextArea`,
+`UI.Select`, `UI.Checkbox`, or a bare SwiftUI control:
+
+```swift
+@State private var email = ""
+@State private var password = ""
+
+UI.Field("Email", description: "We'll never share your email.") {
+    UI.Input("you@example.com", text: $email)
+}
+
+UI.Field("Password", error: "Password must be at least 8 characters.") {
+    UI.Input("Password", text: $password, isSecure: true, isInvalid: true)
+}
+```
+
+### Item
+
+Generic list-row composition — leading content, title/subtitle, trailing
+content, each independently optional via constrained convenience
+initializers:
+
+```swift
+UI.Item("Plain row, no slots")
+
+UI.Item("Notifications", subtitle: "Push, email, SMS", leading: {
+    Image(systemName: "bell")
+})
+
+UI.Item("Wi-Fi", subtitle: "Connected", leading: {
+    Image(systemName: "wifi")
+}, trailing: {
+    Image(systemName: "chevron.right").foregroundStyle(.secondary)
+})
+```
+
+With only one slot, use the explicit `leading:`/`trailing:` label — a bare
+trailing closure is ambiguous between the two single-slot initializers.
+
+### InputGroup
+
+`UI.Input` with a leading/trailing icon or button slot — same single-slot
+gotcha as `Item` above:
+
+```swift
+@State private var search = ""
+@State private var amount = ""
+
+UI.InputGroup("Search", text: $search, leading: {
+    Image(systemName: "magnifyingglass")
+})
+
+UI.InputGroup("0.00", text: $amount, trailing: {
+    Button("Max") { amount = maxAmount }
+})
+```
+
+### Accordion
+
+Same items+content-closure shape as `UI.Tabs`. `allowsMultipleExpanded:
+false` (the default, shadcn's "single" type) closes any other open section
+when one opens; `true` (shadcn's "multiple") leaves them independent:
+
+```swift
+@State private var expanded: Set<String> = ["shipping"]
+
+UI.Accordion(
+    items: [
+        (tag: "shipping", title: "Shipping"),
+        (tag: "returns", title: "Returns")
+    ],
+    expanded: $expanded
+) { tag in
+    switch tag {
+    case "shipping": Text("Ships in 3-5 business days.")
+    default: Text("30-day returns, no questions asked.")
+    }
+}
+```
+
+### Pagination
+
+```swift
+@State private var page = 1
+
+UI.Pagination(page: $page, totalPages: 42)
+```
+
+Beyond 7 pages, collapses to page 1, the last page, and a window around
+the current page, with an ellipsis for the gap.
+
+### Command
+
+Modifier-shaped like `uiSheet`/`uiDialog` — a command palette is triggered
+from anywhere (a toolbar button, a keyboard shortcut), not from one
+specific view's own tap the way `UI.Combobox`'s trigger is self-contained:
+
+```swift
+@State private var showCommand = false
+
+MyToolbarButton(action: { showCommand = true })
+    .uiCommand(isPresented: $showCommand, groups: [
+        UI.CommandGroup("Suggestions", items: [
+            UI.CommandItem("New file", systemImage: "doc.badge.plus", shortcut: "⌘N", action: { newFile() }),
+            UI.CommandItem("Search", systemImage: "magnifyingglass", shortcut: "⌘K", action: { search() })
+        ]),
+        UI.CommandGroup("Settings", items: [
+            UI.CommandItem("Preferences", systemImage: "gearshape", action: { openSettings() })
+        ])
+    ])
+```
 
 ### Label
 

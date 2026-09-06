@@ -21,6 +21,11 @@ struct UsageProbe: View {
     @State private var alignment = "left"
     @State private var styles: Set<String> = ["bold"]
     @State private var otpCode = ""
+    @State private var fieldEmail = ""
+    @State private var groupSearch = ""
+    @State private var accordionExpanded: Set<String> = ["a"]
+    @State private var page = 2
+    @State private var showCommand = false
 
     var body: some View {
         VStack {
@@ -85,6 +90,27 @@ struct UsageProbe: View {
             UI.Empty(systemImage: "tray", title: "No messages", actionTitle: "Refresh", action: {})
             UI.Breadcrumb([UI.BreadcrumbItem("Home", action: {}), UI.BreadcrumbItem("Settings")])
             UI.InputOTP(length: 6, code: $otpCode)
+
+            UI.Field("Email", description: "We'll never share it.") {
+                UI.Input("you@example.com", text: $fieldEmail)
+            }
+            UI.Item("Wi-Fi", subtitle: "Connected", leading: {
+                Image(systemName: "wifi")
+            })
+            UI.InputGroup("Search", text: $groupSearch, leading: {
+                Image(systemName: "magnifyingglass")
+            })
+            UI.Accordion(
+                items: [(tag: "a", title: "Section A"), (tag: "b", title: "Section B")],
+                expanded: $accordionExpanded
+            ) { tag in
+                Text("Content \(tag)")
+            }
+            UI.Pagination(page: $page, totalPages: 10)
+            Text("Command trigger")
+                .uiCommand(isPresented: $showCommand, groups: [
+                    UI.CommandGroup(items: [UI.CommandItem("New file", action: {})])
+                ])
         }
     }
 }

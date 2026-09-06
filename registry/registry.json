@@ -351,6 +351,66 @@
           "files": ["InputOTP.swift"]
         }
       }
+    },
+    {
+      "name": "field",
+      "description": "Label + control + description/error composition wrapper around any control",
+      "dependencies": ["tokens", "label", "input"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Field.swift"]
+        }
+      }
+    },
+    {
+      "name": "item",
+      "description": "Generic list-row composition: leading content, title/subtitle, trailing content",
+      "dependencies": ["tokens", "separator"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Item.swift"]
+        }
+      }
+    },
+    {
+      "name": "input-group",
+      "description": "Input with a leading/trailing icon or button slot",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["InputGroup.swift"]
+        }
+      }
+    },
+    {
+      "name": "accordion",
+      "description": "Multiple expand/collapse sections sharing single- or multiple-open state",
+      "dependencies": ["tokens", "separator"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Accordion.swift"]
+        }
+      }
+    },
+    {
+      "name": "pagination",
+      "description": "Page-number strip with prev/next and windowed ellipsis collapsing",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Pagination.swift"]
+        }
+      }
+    },
+    {
+      "name": "command",
+      "description": "Searchable, grouped command palette presented in its own sheet, with kbd shortcut hints",
+      "dependencies": ["tokens", "kbd"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Command.swift"]
+        }
+      }
     }
   ]
 }

@@ -1,0 +1,117 @@
+import SwiftUI
+
+/// shadcn-swift component: input-group
+/// depends on: tokens
+///
+/// UI.Input with a leading/trailing icon or button slot — a search field
+/// with a magnifying glass, an amount field with a trailing "Max" button,
+/// etc. A separate component rather than adding slots to UI.Input itself:
+/// the plain Input stays the common case with a simple signature, and this
+/// covers the compositional one, same split shadcn itself draws between
+/// Input and InputGroup.
+///
+/// Gotcha: when supplying only ONE slot, use an explicit `leading:`/
+/// `trailing:` argument label rather than a bare trailing closure — with
+/// no label, the compiler can't tell which single-slot initializer you
+/// mean and reports "ambiguous use of init".
+public extension UI {
+    struct InputGroup<Leading: View, Trailing: View>: View {
+        @Environment(\.uiTheme) private var theme
+        @FocusState private var isFocused: Bool
+
+        private let placeholder: String
+        @Binding private var text: String
+        private let isInvalid: Bool
+        private let leading: () -> Leading
+        private let trailing: () -> Trailing
+
+        public init(
+            _ placeholder: String,
+            text: Binding<String>,
+            isInvalid: Bool = false,
+            @ViewBuilder leading: @escaping () -> Leading,
+            @ViewBuilder trailing: @escaping () -> Trailing
+        ) {
+            self.placeholder = placeholder
+            self._text = text
+            self.isInvalid = isInvalid
+            self.leading = leading
+            self.trailing = trailing
+        }
+
+        public var body: some View {
+            HStack(spacing: theme.spacing.sm) {
+                leading()
+                    .foregroundStyle(theme.colors.mutedForeground)
+
+                TextField(placeholder, text: $text)
+                    .focused($isFocused)
+
+                trailing()
+                    .foregroundStyle(theme.colors.mutedForeground)
+            }
+            .font(theme.typography.body)
+            .foregroundStyle(theme.colors.foreground)
+            .padding(.horizontal, theme.spacing.md)
+            .padding(.vertical, theme.spacing.sm)
+            .background(theme.colors.background)
+            .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
+                    .strokeBorder(borderColor, lineWidth: isFocused ? 2 : 1)
+            )
+            .animation(.easeOut(duration: 0.15), value: isFocused)
+        }
+
+        private var borderColor: Color {
+            if isInvalid { return theme.colors.destructive }
+            return isFocused ? theme.colors.ring : theme.colors.input
+        }
+    }
+}
+
+public extension UI.InputGroup where Trailing == EmptyView {
+    init(
+        _ placeholder: String,
+        text: Binding<String>,
+        isInvalid: Bool = false,
+        @ViewBuilder leading: @escaping () -> Leading
+    ) {
+        self.init(placeholder, text: text, isInvalid: isInvalid, leading: leading, trailing: { EmptyView() })
+    }
+}
+
+public extension UI.InputGroup where Leading == EmptyView {
+    init(
+        _ placeholder: String,
+        text: Binding<String>,
+        isInvalid: Bool = false,
+        @ViewBuilder trailing: @escaping () -> Trailing
+    ) {
+        self.init(placeholder, text: text, isInvalid: isInvalid, leading: { EmptyView() }, trailing: trailing)
+    }
+}
+
+#if DEBUG
+private struct InputGroupPreview: View {
+    @State private var search = ""
+    @State private var amount = ""
+
+    var body: some View {
+        VStack(spacing: 12) {
+            UI.InputGroup("Search", text: $search, leading: {
+                Image(systemName: "magnifyingglass")
+            })
+            UI.InputGroup("0.00", text: $amount, trailing: {
+                SwiftUI.Button("Max") {}
+                    .font(.caption)
+            })
+        }
+        .padding()
+    }
+}
+
+#Preview("InputGroup") {
+    InputGroupPreview()
+}
+#endif
