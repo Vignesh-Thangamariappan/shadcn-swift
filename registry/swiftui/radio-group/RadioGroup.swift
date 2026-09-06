@@ -29,7 +29,7 @@ public extension UI {
                         HStack(spacing: theme.spacing.sm) {
                             Circle()
                                 .strokeBorder(
-                                    option == selection ? theme.colors.primary : theme.colors.border,
+                                    option == selection ? theme.colors.primary : theme.colors.input,
                                     lineWidth: 1
                                 )
                                 .frame(width: 20, height: 20)

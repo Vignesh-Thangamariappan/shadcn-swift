@@ -25,10 +25,11 @@ struct UsageProbe: View {
             UI.Card(title: "Hello", actionTitle: "Do it", action: {}) {
                 Text("body")
             }
-            UI.Badge("New", variant: .primary)
+            UI.Badge("New", variant: .default)
             UI.Input("Email", text: $text, isInvalid: text.isEmpty)
             Toggle("plain SwiftUI toggle", isOn: $isOn)
-            UI.Toggle("themed toggle", isOn: $isOn)
+            UI.Switch("themed switch", isOn: $isOn)
+            UI.Toggle(systemImage: "bold", isOn: $isOn)
 
             UI.Label("Themed label")
             UI.Separator()

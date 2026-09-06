@@ -42,7 +42,7 @@ public extension UI {
                 if text.isEmpty {
                     Text(placeholder)
                         .font(theme.typography.body)
-                        .foregroundStyle(theme.colors.foreground.opacity(0.4))
+                        .foregroundStyle(theme.colors.mutedForeground)
                         .padding(.top, 8)
                         .padding(.leading, 5)
                         .allowsHitTesting(false)
@@ -61,7 +61,7 @@ public extension UI {
 
         private var borderColor: Color {
             if isInvalid { return theme.colors.destructive }
-            return isFocused ? theme.colors.primary : theme.colors.border
+            return isFocused ? theme.colors.ring : theme.colors.input
         }
     }
 }

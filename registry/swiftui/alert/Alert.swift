@@ -8,6 +8,10 @@ import SwiftUI
 /// with the old `.alert(isPresented:content:)` modifier. This is an inline
 /// banner, not a modal — an unrelated shape that happens to share the name
 /// shadcn uses, which is exactly the case the UI namespace exists for.
+///
+/// Uses `card`/`cardForeground` for its surface (real shadcn's Alert is
+/// `bg-card text-card-foreground`) and `mutedForeground` for the secondary
+/// message line, matching shadcn's `text-muted-foreground` on that element.
 public extension UI {
     enum AlertVariant {
         case `default`, destructive
@@ -34,16 +38,16 @@ public extension UI {
                 VStack(alignment: .leading, spacing: theme.spacing.xs) {
                     Text(title)
                         .font(theme.typography.label)
-                        .foregroundStyle(theme.colors.foreground)
+                        .foregroundStyle(theme.colors.cardForeground)
                     if let message {
                         Text(message)
                             .font(theme.typography.body)
-                            .foregroundStyle(theme.colors.foreground.opacity(0.8))
+                            .foregroundStyle(theme.colors.mutedForeground)
                     }
                 }
             }
             .padding(theme.spacing.md)
-            .background(theme.colors.background)
+            .background(theme.colors.card)
             .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)

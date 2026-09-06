@@ -29,6 +29,8 @@ public extension UI {
         public var body: some View {
             content()
                 .padding(theme.spacing.md)
+                .foregroundStyle(theme.colors.popoverForeground)
+                .background(theme.colors.popover)
         }
     }
 }

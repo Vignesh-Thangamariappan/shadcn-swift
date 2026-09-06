@@ -41,7 +41,7 @@ public extension UI {
                 .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
-                        .strokeBorder(theme.colors.border, lineWidth: 1)
+                        .strokeBorder(theme.colors.input, lineWidth: 1)
                 )
             }
             .buttonStyle(.plain)

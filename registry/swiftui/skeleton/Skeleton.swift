@@ -2,6 +2,10 @@ import SwiftUI
 
 /// shadcn-swift component: skeleton
 /// depends on: tokens
+///
+/// Fill is `theme.colors.muted` — real shadcn's Skeleton is literally
+/// `bg-muted`. An earlier version used `secondary` here, which is really a
+/// button-variant background, not a subtle-fill token.
 public extension UI {
     struct Skeleton: View {
         @Environment(\.uiTheme) private var theme
@@ -11,7 +15,7 @@ public extension UI {
 
         public var body: some View {
             RoundedRectangle(cornerRadius: theme.radius.sm, style: .continuous)
-                .fill(theme.colors.secondary)
+                .fill(theme.colors.muted)
                 .opacity(isPulsing ? 0.5 : 1)
                 .onAppear {
                     withAnimation(.easeInOut(duration: 0.9).repeatForever(autoreverses: true)) {

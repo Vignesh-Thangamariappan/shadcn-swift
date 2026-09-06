@@ -3,68 +3,122 @@ import SwiftUI
 /// shadcn-swift component: toggle
 /// depends on: tokens
 ///
-/// Implemented as a custom ToggleStyle rather than `.tint()` or the deprecated
-/// `SwitchToggleStyle(tint:)` — both are OS-version-dependent about which
-/// colors they actually honor. A custom style reads colors straight from the
-/// theme, same guarantee every other component in this registry makes.
+/// This is real shadcn's Toggle: a pressable two-state BUTTON (the
+/// bold/italic toolbar idiom) — visually and behaviorally nothing like a
+/// switch. A pill-and-thumb control (which is what this repo originally
+/// called "toggle") is shadcn's separate `Switch` component; see
+/// registry/swiftui/switch. Variants/sizes match shadcn's stock Toggle:
+/// `default | outline`, `sm | default | lg`.
 public extension UI {
-    struct SwitchToggleStyle: ToggleStyle {
-        let theme: UI.Theme
-
-        public func makeBody(configuration: Configuration) -> some View {
-            Button {
-                configuration.isOn.toggle()
-            } label: {
-                RoundedRectangle(cornerRadius: 999, style: .continuous)
-                    .fill(configuration.isOn ? theme.colors.primary : theme.colors.secondary)
-                    .frame(width: 44, height: 24)
-                    .overlay(
-                        Circle()
-                            .fill(theme.colors.background)
-                            .padding(2)
-                            .offset(x: configuration.isOn ? 10 : -10)
-                    )
-                    .animation(.easeOut(duration: 0.15), value: configuration.isOn)
-            }
-            .buttonStyle(.plain)
-        }
+    enum ToggleVariant {
+        case `default`, outline
     }
 
-    struct Toggle: View {
+    enum ToggleSize {
+        case sm, `default`, lg
+    }
+
+    struct Toggle<Label: View>: View {
         @Environment(\.uiTheme) private var theme
+        @Environment(\.isEnabled) private var isEnabled
 
-        private let label: String
+        private let variant: ToggleVariant
+        private let size: ToggleSize
         @Binding private var isOn: Bool
+        private let label: () -> Label
 
-        public init(_ label: String, isOn: Binding<Bool>) {
-            self.label = label
+        public init(
+            isOn: Binding<Bool>,
+            variant: ToggleVariant = .default,
+            size: ToggleSize = .default,
+            @ViewBuilder label: @escaping () -> Label
+        ) {
             self._isOn = isOn
+            self.variant = variant
+            self.size = size
+            self.label = label
         }
 
         public var body: some View {
-            SwiftUI.Toggle(label, isOn: $isOn)
-                .toggleStyle(SwitchToggleStyle(theme: theme))
-                .font(theme.typography.body)
-                .foregroundStyle(theme.colors.foreground)
+            SwiftUI.Button {
+                isOn.toggle()
+            } label: {
+                label()
+                    .font(theme.typography.label)
+                    .padding(.horizontal, horizontalPadding)
+                    .frame(height: height)
+                    .background(background)
+                    .foregroundStyle(foreground)
+                    .clipShape(RoundedRectangle(cornerRadius: theme.radius.sm, style: .continuous))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: theme.radius.sm, style: .continuous)
+                            .strokeBorder(variant == .outline ? theme.colors.input : .clear, lineWidth: 1)
+                    )
+            }
+            .buttonStyle(.plain)
+            .opacity(isEnabled ? 1 : 0.5)
+        }
+
+        private var background: Color {
+            isOn ? theme.colors.accent : .clear
+        }
+
+        private var foreground: Color {
+            isOn ? theme.colors.accentForeground : theme.colors.foreground
+        }
+
+        private var horizontalPadding: CGFloat {
+            switch size {
+            case .sm: 8
+            case .default: 12
+            case .lg: 16
+            }
+        }
+
+        private var height: CGFloat {
+            switch size {
+            case .sm: 32
+            case .default: 36
+            case .lg: 40
+            }
         }
     }
 }
 
+public extension UI.Toggle where Label == Image {
+    init(
+        systemImage: String,
+        isOn: Binding<Bool>,
+        variant: UI.ToggleVariant = .default,
+        size: UI.ToggleSize = .default
+    ) {
+        self.init(isOn: isOn, variant: variant, size: size) { Image(systemName: systemImage) }
+    }
+}
+
 #if DEBUG
-private struct TogglePreview: View {
-    @State private var on = true
-    @State private var off = false
+private struct ToggleButtonPreview: View {
+    @State private var bold = true
+    @State private var italic = false
 
     var body: some View {
         VStack(spacing: 12) {
-            UI.Toggle("On", isOn: $on)
-            UI.Toggle("Off", isOn: $off)
+            HStack(spacing: 8) {
+                UI.Toggle(systemImage: "bold", isOn: $bold)
+                UI.Toggle(systemImage: "italic", isOn: $italic)
+                UI.Toggle(systemImage: "underline", isOn: .constant(false), variant: .outline)
+            }
+            HStack(spacing: 8) {
+                UI.Toggle(systemImage: "bold", isOn: $bold, size: .sm)
+                UI.Toggle(systemImage: "bold", isOn: $bold, size: .default)
+                UI.Toggle(systemImage: "bold", isOn: $bold, size: .lg)
+            }
         }
         .padding()
     }
 }
 
 #Preview("Toggle") {
-    TogglePreview()
+    ToggleButtonPreview()
 }
 #endif

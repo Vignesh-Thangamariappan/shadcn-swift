@@ -119,13 +119,16 @@ site for each component: **[`docs/USAGE.md`](docs/USAGE.md)**.
 wire via `resolve_plan`), the `UI` namespace pattern, the CLI
 (`init`/`add`/`list`), the MCP server (`list_components`/`get_component`/
 `resolve_plan`, checked with a real stdio JSON-RPC round trip), and an
-environment-injected `UI.Theme` standing in for Tailwind's CSS variables
-(colors, spacing, radius, typography, plus a `destructive` color — override
-via `.uiTheme(_:)`).
+environment-injected `UI.Theme` standing in for Tailwind's CSS variables —
+14 color tokens (`primary`/`primaryForeground`, `secondary`/
+`secondaryForeground`, `background`, `foreground`, `border`, `destructive`,
+`card`/`cardForeground`, `popover`/`popoverForeground`, `muted`/
+`mutedForeground`, `accent`/`accentForeground`, `input`, `ring`), spacing,
+radius, and typography — override via `.uiTheme(_:)`.
 
-**25 components today.** 16 plain views: `tokens`, `button`, `card`, `badge`,
-`input`, `toggle`, `label`, `separator`, `avatar`, `progress`, `skeleton`,
-`checkbox`, `radio-group`, `alert`, `textarea`, `tabs`. Plus the
+**26 components today.** 17 plain views: `tokens`, `button`, `card`, `badge`,
+`input`, `switch`, `toggle`, `label`, `separator`, `avatar`, `progress`,
+`skeleton`, `checkbox`, `radio-group`, `alert`, `textarea`, `tabs`. Plus the
 overlay/portal wave — 3 more self-contained views whose own internal state
 dissolves the portal problem (`select`, `dropdown-menu`, `combobox`), and 6
 `ui`-prefixed presentation modifiers applied to a trigger view you already
@@ -136,6 +139,35 @@ to their real SwiftUI counterparts (`Button`, `Toggle`) or a same-named
 SwiftUI type (`Alert`, `Label`), to keep proving the no-shadowing claim as
 the set grows.
 
+### Parity audit (verified against real shadcn, not memory)
+
+A pass against `ui.shadcn.com` and a live shadcn install already vendored
+elsewhere on this machine turned up real gaps, now fixed:
+
+- **`switch` vs `toggle` were conflated.** What this repo originally shipped
+  as `toggle` (pill + sliding thumb) is shadcn's `Switch`. Real shadcn's
+  `Toggle` is an unrelated component — a pressable two-state button (the
+  bold/italic toolbar idiom). Renamed the old component to `switch` and
+  built a real `toggle` from scratch. **Breaking rename**, done deliberately
+  pre-1.0 with no other consumers yet.
+- **Button and Badge variant names/coverage didn't match stock shadcn.**
+  Button is now `default | destructive | outline | secondary | ghost |
+  link` × size `sm | default | lg | icon` (was `primary | secondary |
+  ghost`, no size prop, and silently stretched to full width — real
+  shadcn's Button is content-sized, not full-width, fixed too). Badge is
+  now `default | secondary | destructive | outline` (was missing
+  `destructive`, and `primary` where stock says `default`).
+- **6 theme token pairs were missing**, collapsed into `background`/
+  `secondary`/`primary` in a way that would've silently diverged the moment
+  a theme got customized: `card`/`cardForeground`, `popover`/
+  `popoverForeground`, `muted`/`mutedForeground`, `accent`/
+  `accentForeground`, `input`, `ring`. Added, and routed the components
+  that actually own those surfaces onto them (Card/Alert → `card`; Popover/
+  Tooltip → `popover`; Skeleton fill, TextArea placeholder, Alert message →
+  `muted`; pressed `UI.Toggle` → `accent`; Input/TextArea/Checkbox/
+  RadioGroup/Select/Combobox borders → `input`; Input/TextArea focus rings
+  → `ring`, not `primary`).
+
 Two design calls worth knowing before you reach for these:
 - **`dialog` uses `.fullScreenCover`**, not a custom `.overlay` scrim. The
   overlay version is the naive port and it's wrong in three specific ways —
@@ -145,14 +177,21 @@ Two design calls worth knowing before you reach for these:
   compact width — a runtime behavior difference a typecheck can't catch,
   since both forms compile fine.
 
-**Deliberately skipped: `hover-card`.** iOS has no cursor-hover concept on a
-touch device, so there's no honest port — `tooltip` (long-press) or
-`popover` cover what a hover-card would have been used for. This is a
-platform gap, not a TODO.
+**Not yet, coverage-wise** (the same parity audit's other finding — real
+shadcn has ~50 registry items, we have 26): accordion, aspect-ratio,
+breadcrumb, calendar, carousel, chart, collapsible, command, data-table,
+date-picker, drawer, empty, field, input-group, input-otp, item, kbd,
+menubar, navigation-menu, pagination, resizable, scroll-area, sidebar,
+slider, spinner, table, toggle-group. None of these are half-built or
+mismatched — they're simply not started. `hover-card` is the one exception:
+deliberately skipped, not missing — iOS has no cursor-hover concept on a
+touch device, so there's no honest port; `tooltip` (long-press) or
+`popover` cover what it would have been used for.
 
-**Not yet:** a remote registry (today `--registry` / `SHADCN_SWIFT_REGISTRY`
-are local paths), configurable namespace (the `UI` name is currently baked
-into the vendored source, not templated), and anything Kotlin/Compose.
+**Not yet, otherwise:** a remote registry (today `--registry` /
+`SHADCN_SWIFT_REGISTRY` are local paths), configurable namespace (the `UI`
+name is currently baked into the vendored source, not templated), and
+anything Kotlin/Compose.
 
 **Invariant to keep, and to lint for once there are more components:** no
 vendored file under `registry/swiftui/` may `import` anything but

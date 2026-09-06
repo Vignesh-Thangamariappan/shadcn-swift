@@ -14,7 +14,7 @@
     },
     {
       "name": "button",
-      "description": "Primary/secondary/ghost button style",
+      "description": "6 variants (default/destructive/outline/secondary/ghost/link) x 4 sizes (sm/default/lg/icon)",
       "dependencies": ["tokens"],
       "platforms": {
         "swiftui": {
@@ -34,7 +34,7 @@
     },
     {
       "name": "badge",
-      "description": "Small status/label pill (primary/secondary/outline)",
+      "description": "Small status/label pill (default/secondary/destructive/outline)",
       "dependencies": ["tokens"],
       "platforms": {
         "swiftui": {
@@ -53,8 +53,18 @@
       }
     },
     {
+      "name": "switch",
+      "description": "Themed on/off switch, pill + sliding thumb (custom ToggleStyle) — was previously named 'toggle'",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Switch.swift"]
+        }
+      }
+    },
+    {
       "name": "toggle",
-      "description": "Themed on/off switch (custom ToggleStyle)",
+      "description": "Pressable two-state button (bold/italic toolbar idiom) — default/outline x sm/default/lg. Not a switch; see 'switch' for that",
       "dependencies": ["tokens"],
       "platforms": {
         "swiftui": {

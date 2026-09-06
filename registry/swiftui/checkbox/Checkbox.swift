@@ -29,7 +29,7 @@ public extension UI {
                         .frame(width: 20, height: 20)
                         .overlay(
                             RoundedRectangle(cornerRadius: theme.radius.sm / 2, style: .continuous)
-                                .strokeBorder(isOn ? .clear : theme.colors.border, lineWidth: 1)
+                                .strokeBorder(isOn ? .clear : theme.colors.input, lineWidth: 1)
                         )
                         .overlay {
                             if isOn {

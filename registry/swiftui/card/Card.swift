@@ -2,6 +2,10 @@ import SwiftUI
 
 /// shadcn-swift component: card
 /// depends on: tokens, button
+///
+/// Uses `theme.colors.card`/`cardForeground`, not `background`/`foreground` —
+/// a real shadcn Card is its own surface token, even though it defaults to
+/// the same value as the page background.
 public extension UI {
     struct Card<Content: View>: View {
         @Environment(\.uiTheme) private var theme
@@ -28,7 +32,7 @@ public extension UI {
                 if let title {
                     Text(title)
                         .font(theme.typography.title)
-                        .foregroundStyle(theme.colors.foreground)
+                        .foregroundStyle(theme.colors.cardForeground)
                 }
 
                 content()
@@ -40,7 +44,7 @@ public extension UI {
                 }
             }
             .padding(theme.spacing.lg)
-            .background(theme.colors.background)
+            .background(theme.colors.card)
             .clipShape(RoundedRectangle(cornerRadius: theme.radius.lg, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: theme.radius.lg, style: .continuous)

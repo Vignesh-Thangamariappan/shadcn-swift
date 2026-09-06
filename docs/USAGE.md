@@ -31,7 +31,7 @@ shadcn-swift list --registry /path/to/shadcn-swift/registry/registry.json
 tokens
   Design tokens (color, spacing, radius, typography) exposed via SwiftUI Environment
 button  (needs: tokens)
-  Primary/secondary/ghost button style
+  6 variants (default/destructive/outline/secondary/ghost/link) x 4 sizes (sm/default/lg/icon)
 card  (needs: tokens, button)
   Card container with optional trailing action button
 context-menu  (needs: tokens, dropdown-menu)
@@ -39,7 +39,7 @@ context-menu  (needs: tokens, dropdown-menu)
 ...
 ```
 
-(25 components today, not all shown here — this list changes; `shadcn-swift
+(26 components today, not all shown here — this list changes; `shadcn-swift
 list` is the source of truth, and section 4 below has a call site for each.)
 
 Add what you need — dependencies come along automatically:
@@ -129,18 +129,44 @@ MyRootView()
     )
 ```
 
+`UI.Theme.Colors` mirrors real shadcn's stock token set: `primary`/
+`primaryForeground`, `secondary`/`secondaryForeground`, `background`,
+`foreground`, `border`, `destructive`, `card`/`cardForeground`, `popover`/
+`popoverForeground`, `muted`/`mutedForeground`, `accent`/
+`accentForeground`, `input`, `ring`. If you're customizing the theme,
+match each token to the SURFACE it names (e.g. `popover` for popover/select/
+combobox/tooltip content, `muted`/`mutedForeground` for skeleton fill and
+secondary text) rather than reusing `background`/`primary` everywhere —
+that's the exact conflation a parity audit against real shadcn caught and
+fixed in this repo's own components.
+
 ### Button
 
+Variants and sizes match real shadcn's stock `button.tsx` exactly:
+
 ```swift
-UI.Button("Continue") {
+UI.Button("Continue") {          // variant: .default, size: .default
     submit()
 }
 
+UI.Button("Delete", variant: .destructive) { delete() }
+UI.Button("Cancel", variant: .outline) { dismiss() }
 UI.Button("Cancel", variant: .secondary) { dismiss() }
+UI.Button("Learn more", variant: .link) { openDocs() }
 UI.Button(variant: .ghost, action: { showInfo() }) {
     Image(systemName: "info.circle")
 }
+
+UI.Button("Small", size: .sm) {}
+UI.Button("Large", size: .lg) {}
+UI.Button(size: .icon, action: { close() }) {
+    Image(systemName: "xmark")
+}
 ```
+
+Buttons size to their content, same as real shadcn — they don't stretch to
+fill their container by default. Wrap in `.frame(maxWidth: .infinity)`
+yourself if you want that.
 
 ### Card
 
@@ -155,6 +181,7 @@ UI.Card(title: "Storage", actionTitle: "Manage", action: { openStorage() }) {
 ```swift
 UI.Badge("New")
 UI.Badge("Draft", variant: .secondary)
+UI.Badge("Failed", variant: .destructive)
 UI.Badge("Beta", variant: .outline)
 ```
 
@@ -173,12 +200,29 @@ field (autofocus on appear, focus-next on submit), use a bare SwiftUI
 `TextField`/`SecureField` with your own `@FocusState` on that screen instead.
 See the deviation note at the top of `input/Input.swift`.
 
-### Toggle
+### Switch
+
+The pill-and-sliding-thumb control (this repo called it `toggle` until a
+parity audit against real shadcn caught the naming — shadcn's actual
+`Toggle` is a different component, see below):
 
 ```swift
 @State private var notificationsEnabled = true
 
-UI.Toggle("Notifications", isOn: $notificationsEnabled)
+UI.Switch("Notifications", isOn: $notificationsEnabled)
+```
+
+### Toggle
+
+Real shadcn's Toggle: a pressable two-state button, the bold/italic
+toolbar idiom — not a switch:
+
+```swift
+@State private var isBold = false
+
+UI.Toggle(systemImage: "bold", isOn: $isBold)
+UI.Toggle(systemImage: "italic", isOn: $isItalic, variant: .outline)
+UI.Toggle(systemImage: "underline", isOn: $isUnderline, size: .sm)
 ```
 
 ### Label

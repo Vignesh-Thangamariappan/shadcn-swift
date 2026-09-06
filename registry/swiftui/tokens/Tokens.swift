@@ -11,6 +11,28 @@ public extension UI.Theme {
         public var foreground: Color
         public var border: Color
         public var destructive: Color
+        /// Card/Alert surface — a distinct slot from `background` even though
+        /// they default to the same value, per real shadcn's own stock theme.
+        /// The point is call sites say which SURFACE they mean, so the two can
+        /// diverge later (e.g. a card on a tinted page) without a find-replace.
+        public var card: Color
+        public var cardForeground: Color
+        /// Popover/Select/Combobox/Tooltip surfaces.
+        public var popover: Color
+        public var popoverForeground: Color
+        /// Secondary text, disabled states, skeleton fill — distinct from
+        /// `secondary` (a button-variant background), the exact conflation
+        /// this token set used to have.
+        public var muted: Color
+        public var mutedForeground: Color
+        /// Hover/selected/pressed row backgrounds (e.g. a pressed UI.Toggle).
+        public var accent: Color
+        public var accentForeground: Color
+        /// Form-control border — distinct from generic `border`.
+        public var input: Color
+        /// Focus ring — distinct from `primary`; overriding one shouldn't
+        /// force re-theming the other.
+        public var ring: Color
 
         public init(
             primary: Color,
@@ -20,7 +42,17 @@ public extension UI.Theme {
             background: Color,
             foreground: Color,
             border: Color,
-            destructive: Color
+            destructive: Color,
+            card: Color,
+            cardForeground: Color,
+            popover: Color,
+            popoverForeground: Color,
+            muted: Color,
+            mutedForeground: Color,
+            accent: Color,
+            accentForeground: Color,
+            input: Color,
+            ring: Color
         ) {
             self.primary = primary
             self.primaryForeground = primaryForeground
@@ -30,6 +62,16 @@ public extension UI.Theme {
             self.foreground = foreground
             self.border = border
             self.destructive = destructive
+            self.card = card
+            self.cardForeground = cardForeground
+            self.popover = popover
+            self.popoverForeground = popoverForeground
+            self.muted = muted
+            self.mutedForeground = mutedForeground
+            self.accent = accent
+            self.accentForeground = accentForeground
+            self.input = input
+            self.ring = ring
         }
 
         public static let `default` = Colors(
@@ -40,7 +82,17 @@ public extension UI.Theme {
             background: Color(.systemBackground),
             foreground: .primary,
             border: Color(.separator),
-            destructive: Color(red: 0.86, green: 0.15, blue: 0.15) // #db2626
+            destructive: Color(red: 0.86, green: 0.15, blue: 0.15), // #db2626
+            card: Color(.systemBackground),
+            cardForeground: .primary,
+            popover: Color(.systemBackground),
+            popoverForeground: .primary,
+            muted: Color(.secondarySystemFill),
+            mutedForeground: Color(.secondaryLabel),
+            accent: Color(.tertiarySystemFill),
+            accentForeground: .primary,
+            input: Color(.separator),
+            ring: Color(red: 0.067, green: 0.067, blue: 0.067) // same as primary today, own slot
         )
     }
 

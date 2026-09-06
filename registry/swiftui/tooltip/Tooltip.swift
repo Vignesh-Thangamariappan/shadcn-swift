@@ -37,7 +37,9 @@ public extension UI {
                 .popover(isPresented: $isPresented) {
                     Text(text)
                         .font(theme.typography.label)
+                        .foregroundStyle(theme.colors.popoverForeground)
                         .padding(theme.spacing.sm)
+                        .background(theme.colors.popover)
                         .presentationCompactAdaptation(.popover)
                 }
         }
