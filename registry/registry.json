@@ -61,6 +61,106 @@
           "files": ["Toggle.swift"]
         }
       }
+    },
+    {
+      "name": "label",
+      "description": "Themed text label that dims when its context is disabled",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Label.swift"]
+        }
+      }
+    },
+    {
+      "name": "separator",
+      "description": "Themed horizontal or vertical divider line",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Separator.swift"]
+        }
+      }
+    },
+    {
+      "name": "avatar",
+      "description": "Circular avatar: remote image with an initials fallback",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Avatar.swift"]
+        }
+      }
+    },
+    {
+      "name": "progress",
+      "description": "Determinate linear progress bar",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["ProgressBar.swift"]
+        }
+      }
+    },
+    {
+      "name": "skeleton",
+      "description": "Pulsing placeholder block for loading states",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Skeleton.swift"]
+        }
+      }
+    },
+    {
+      "name": "checkbox",
+      "description": "Binding<Bool>-driven checkbox with an optional label",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Checkbox.swift"]
+        }
+      }
+    },
+    {
+      "name": "radio-group",
+      "description": "Single-selection list of radio options over any Hashable option type",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["RadioGroup.swift"]
+        }
+      }
+    },
+    {
+      "name": "alert",
+      "description": "Inline default/destructive alert banner (title + optional message)",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Alert.swift"]
+        }
+      }
+    },
+    {
+      "name": "textarea",
+      "description": "Multiline styled text field with placeholder and invalid state (iOS 16+)",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["TextArea.swift"]
+        }
+      }
+    },
+    {
+      "name": "tabs",
+      "description": "Segmented tab switcher over any Hashable tag type, with content per tab",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Tabs.swift"]
+        }
+      }
     }
   ]
 }

@@ -71,59 +71,31 @@ cp .build/release/shadcn-swift .build/release/shadcn-swift-mcp /usr/local/bin/
 (Or skip the copy and invoke `swift run shadcn-swift ...` / `swift run
 shadcn-swift-mcp` from inside this repo — slower per-call, no install step.)
 
-## CLI usage
+## Quick start
 
 ```bash
 cd /path/to/your/app
 shadcn-swift init --registry /path/to/shadcn-swift/registry/registry.json
-shadcn-swift list --registry /path/to/shadcn-swift/registry/registry.json
-shadcn-swift add card   # pulls tokens + button too — see dependency resolution below
+shadcn-swift add card   # pulls tokens + button too, dependencies first
 ```
 
-`add` resolves the full dependency graph and copies dependencies before the
-component that needs them, skips anything already installed (idempotent —
-safe to run repeatedly, `--force` to re-copy), and tracks what's installed in
-a project-local `components.json`, same idea as shadcn's.
-
-`init --registry` accepts a relative or absolute path; whatever you pass is
-what lands in `components.json`. A path relative to the consumer project
-(e.g. `../shadcn-swift/registry/registry.json`) travels with a clone of that
-project — an absolute path (as in the examples above) does not, so if you
-commit `components.json`, know that the `registryPath` field is then
-machine-local unless every clone has this repo at the same absolute path.
-
-## MCP server
-
-`shadcn-swift-mcp` exposes three tools, and deliberately **no write tool**:
-
-| Tool | Does |
-|---|---|
-| `list_components` | Every component: name, description, dependencies, platforms |
-| `get_component` | One component's own source file(s), with full contents |
-| `resolve_plan` | Transitive dependency order for a set of names, dependencies first |
-
-The point of the vendored model is that a human reviews what lands in their
-project, and a component they've hand-edited must never get silently
-clobbered by an agent's tool call — so writing stays with `shadcn-swift add`,
-typed by hand. An agent's flow is: `resolve_plan(["card"])` →
-`get_component` for each name in that order → write the files itself (with
-your review), the same way it would write any other code.
-
-Point it at a registry via the `SHADCN_SWIFT_REGISTRY` environment variable
-(path to `registry.json`). Register it (e.g. in a project's `.mcp.json`):
+Or point a coding agent at it instead of running the CLI yourself — three
+read-only MCP tools (`list_components`, `get_component`, `resolve_plan`, no
+write tool on purpose):
 
 ```json
 {
   "mcpServers": {
     "shadcn-swift": {
       "command": "/usr/local/bin/shadcn-swift-mcp",
-      "env": {
-        "SHADCN_SWIFT_REGISTRY": "/path/to/shadcn-swift/registry/registry.json"
-      }
+      "env": { "SHADCN_SWIFT_REGISTRY": "/path/to/shadcn-swift/registry/registry.json" }
     }
   }
 }
 ```
+
+Full walkthrough, every flag, the agent's read-then-write flow, and a call
+site for each component: **[`docs/USAGE.md`](docs/USAGE.md)**.
 
 ## What's here vs. what's next
 
@@ -136,17 +108,22 @@ environment-injected `UI.Theme` standing in for Tailwind's CSS variables
 (colors, spacing, radius, typography, plus a `destructive` color — override
 via `.uiTheme(_:)`).
 
-**Six components today:** `tokens`, `button`, `card`, `badge`, `input`
-(styled `TextField`/`SecureField` with a focus ring and an invalid/error
-state), `toggle` (custom `ToggleStyle`, not `.tint()`). See
-[`docs/USAGE.md`](docs/USAGE.md) for call sites. `Scripts/UsageProbe.swift`
-exercises all of them side by side with their real SwiftUI counterparts
-(`Button`, `Toggle`) to keep proving the no-shadowing claim as the set grows.
+**16 components today**, all view-shaped (no overlays/portals yet — see
+below): `tokens`, `button`, `card`, `badge`, `input`, `toggle`, `label`,
+`separator`, `avatar`, `progress`, `skeleton`, `checkbox`, `radio-group`,
+`alert`, `textarea`, `tabs`. See [`docs/USAGE.md`](docs/USAGE.md) for a call
+site for each. `Scripts/UsageProbe.swift` exercises all of them, several
+right next to their real SwiftUI counterparts (`Button`, `Toggle`) or a
+same-named SwiftUI type (`Alert`, `Label`), to keep proving the
+no-shadowing claim as the set grows.
 
-**Not yet:** a bigger component set (dialog/sheet, select, alert — these are
-presentation modifiers, not plain views, so they need a registry-shape
-decision before copying the current pattern), a remote registry (today
-`--registry` / `SHADCN_SWIFT_REGISTRY` are local paths), configurable
+**Not yet:** the overlay/menu/selection set — dialog, sheet, alert-dialog,
+popover, dropdown-menu, select, combobox, tooltip, context-menu, hover-card.
+SwiftUI has no `Radix.Portal` equivalent, so each of those needs a real
+design decision (sheet vs. `.overlay` vs. a presentation `ViewModifier`)
+before it can follow the plain-`View` pattern the 16 above use — that's
+deliberately a second wave, not an oversight. Also not yet: a remote registry
+(today `--registry` / `SHADCN_SWIFT_REGISTRY` are local paths), configurable
 namespace (the `UI` name is currently baked into the vendored source, not
 templated), and anything Kotlin/Compose.
 

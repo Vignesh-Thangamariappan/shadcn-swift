@@ -65,6 +65,13 @@ Already-installed components are skipped on a re-run — safe to call `add`
 again from a script or CI without duplicating work. Pass `--force` to
 re-copy and overwrite (you'll lose any hand-edits to that component).
 
+`init --registry` accepts a relative or absolute path; whatever you pass is
+what lands in `components.json`. A path relative to the consumer project
+(e.g. `../shadcn-swift/registry/registry.json`) travels with a clone of that
+project — an absolute path (as in the examples above) does not, so if you
+commit `components.json`, know that the `registryPath` field is then
+machine-local unless every clone has this repo at the same absolute path.
+
 ## 3. Wire up a consumer project (MCP / agent)
 
 Add to the project's `.mcp.json` (or your agent's MCP config):
@@ -92,8 +99,11 @@ An agent's flow, mirroring what the CLI does internally:
    tool), so you get the same diff-and-review step you'd get from typing
    `shadcn-swift add` by hand
 
-There is no `add_component` tool on purpose — see the MCP section of the
-main README for why.
+There is no `add_component` tool on purpose. The point of the vendored model
+is that a human reviews what lands in their project, and a component they've
+hand-edited must never get silently clobbered by an agent's tool call — so
+writing stays with `shadcn-swift add`, typed by hand, or the agent's own
+normal file-write tool.
 
 ## 4. Using the components
 
@@ -169,6 +179,97 @@ See the deviation note at the top of `input/Input.swift`.
 @State private var notificationsEnabled = true
 
 UI.Toggle("Notifications", isOn: $notificationsEnabled)
+```
+
+### Label
+
+```swift
+UI.Label("Email address")
+```
+
+### Separator
+
+```swift
+UI.Separator()             // horizontal, fills available width
+UI.Separator(.vertical)    // needs a fixed height from its container
+```
+
+### Avatar
+
+```swift
+UI.Avatar(name: "Ada Lovelace")                                   // initials fallback: "AL"
+UI.Avatar(name: "Ada Lovelace", imageURL: profileImageURL, size: 56)
+```
+
+### ProgressBar
+
+```swift
+UI.ProgressBar(value: downloadProgress)   // 0...1, clamped
+```
+
+### Skeleton
+
+```swift
+UI.Skeleton()
+    .frame(height: 16)
+    .frame(maxWidth: 200)
+```
+
+### Checkbox
+
+```swift
+@State private var acceptedTerms = false
+
+UI.Checkbox("Accept terms", isOn: $acceptedTerms)
+UI.Checkbox(isOn: $acceptedTerms)   // no label — just the box
+```
+
+### RadioGroup
+
+Generic over any `Hashable` option type — a `String` enum works just as well:
+
+```swift
+@State private var plan = "free"
+
+UI.RadioGroup(options: ["free", "pro", "team"], selection: $plan) { option in
+    option.capitalized
+}
+```
+
+### Alert
+
+```swift
+UI.Alert("Update available", message: "Version 2.1 is ready to install.")
+UI.Alert("Something went wrong", message: error.localizedDescription, variant: .destructive)
+```
+
+### TextArea
+
+Requires iOS 16+ (`.scrollContentBackground`). Same focus caveat as `UI.Input`:
+
+```swift
+@State private var notes = ""
+
+UI.TextArea("Write something...", text: $notes)
+UI.TextArea("Required", text: $notes, isInvalid: notes.isEmpty, minHeight: 140)
+```
+
+### Tabs
+
+Generic over any `Hashable` tag — content is provided per selected tag:
+
+```swift
+@State private var tab = "profile"
+
+UI.Tabs(
+    items: [(tag: "profile", title: "Profile"), (tag: "settings", title: "Settings")],
+    selection: $tab
+) { selected in
+    switch selected {
+    case "profile": ProfileView()
+    default: SettingsView()
+    }
+}
 ```
 
 ## 5. Verifying a change to this repo
