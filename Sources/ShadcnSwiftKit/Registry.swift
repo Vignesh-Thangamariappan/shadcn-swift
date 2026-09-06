@@ -1,31 +1,36 @@
 import Foundation
 
-struct Registry: Codable {
-    struct Component: Codable {
-        struct Platforms: Codable {
-            struct Target: Codable {
-                let files: [String]
+public struct Registry: Codable, Sendable {
+    public struct Component: Codable, Sendable {
+        public struct Platforms: Codable, Sendable {
+            public struct Target: Codable, Sendable {
+                public let files: [String]
             }
-            let swiftui: Target?
-            let compose: Target?
+            public let swiftui: Target?
+            public let compose: Target?
         }
 
-        let name: String
-        let description: String
-        let dependencies: [String]
-        let platforms: Platforms
+        public let name: String
+        public let description: String
+        public let dependencies: [String]
+        public let platforms: Platforms
     }
 
-    let version: Int
-    let components: [Component]
+    public let version: Int
+    public let components: [Component]
 
-    func component(named name: String) -> Component? {
+    public init(version: Int, components: [Component]) {
+        self.version = version
+        self.components = components
+    }
+
+    public func component(named name: String) -> Component? {
         components.first { $0.name == name }
     }
 
     /// Resolves a component and every transitive dependency, dependencies first,
     /// so `add card` also emits `tokens` and `button` in an install-safe order.
-    func resolve(_ names: [String]) throws -> [Component] {
+    public func resolve(_ names: [String]) throws -> [Component] {
         var seen = Set<String>()
         var ordered: [Component] = []
 
@@ -47,16 +52,16 @@ struct Registry: Codable {
         return ordered
     }
 
-    static func load(from url: URL) throws -> Registry {
+    public static func load(from url: URL) throws -> Registry {
         let data = try Data(contentsOf: url)
         return try JSONDecoder().decode(Registry.self, from: data)
     }
 }
 
-enum RegistryError: LocalizedError {
+public enum RegistryError: LocalizedError {
     case unknownComponent(String)
 
-    var errorDescription: String? {
+    public var errorDescription: String? {
         switch self {
         case .unknownComponent(let name):
             "Unknown component \"\(name)\" — run `shadcn-swift list` to see what's available."

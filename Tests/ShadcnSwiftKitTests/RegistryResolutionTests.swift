@@ -1,5 +1,5 @@
 import XCTest
-@testable import ShadcnSwiftCLI
+@testable import ShadcnSwiftKit
 
 final class RegistryResolutionTests: XCTestCase {
     private func makeRegistry() -> Registry {

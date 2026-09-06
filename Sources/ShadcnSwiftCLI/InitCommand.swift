@@ -1,5 +1,6 @@
 import ArgumentParser
 import Foundation
+import ShadcnSwiftKit
 
 struct InitCommand: ParsableCommand {
     static let configuration = CommandConfiguration(
