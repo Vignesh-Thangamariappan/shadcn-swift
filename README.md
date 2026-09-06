@@ -126,18 +126,27 @@ environment-injected `UI.Theme` standing in for Tailwind's CSS variables —
 `mutedForeground`, `accent`/`accentForeground`, `input`, `ring`), spacing,
 radius, and typography — override via `.uiTheme(_:)`.
 
-**26 components today.** 17 plain views: `tokens`, `button`, `card`, `badge`,
-`input`, `switch`, `toggle`, `label`, `separator`, `avatar`, `progress`,
-`skeleton`, `checkbox`, `radio-group`, `alert`, `textarea`, `tabs`. Plus the
-overlay/portal wave — 3 more self-contained views whose own internal state
-dissolves the portal problem (`select`, `dropdown-menu`, `combobox`), and 6
-`ui`-prefixed presentation modifiers applied to a trigger view you already
-have (`sheet`, `confirmation-dialog`, `dialog`, `popover`, `tooltip`,
-`context-menu`). See [`docs/USAGE.md`](docs/USAGE.md) for a call site for
-each. `Scripts/UsageProbe.swift` exercises all of them, several right next
-to their real SwiftUI counterparts (`Button`, `Toggle`) or a same-named
-SwiftUI type (`Alert`, `Label`), to keep proving the no-shadowing claim as
-the set grows.
+**35 components today.** 26 plain views: `tokens`, `button`, `card`,
+`badge`, `input`, `switch`, `toggle`, `label`, `separator`, `avatar`,
+`progress`, `skeleton`, `checkbox`, `radio-group`, `alert`, `textarea`,
+`tabs`, `slider`, `spinner`, `kbd`, `collapsible`, `toggle-group`, `empty`,
+`breadcrumb`, `input-otp`, plus the passthrough `aspect-ratio` modifier.
+Plus the overlay/portal wave — 3 more self-contained views whose own
+internal state dissolves the portal problem (`select`, `dropdown-menu`,
+`combobox`), and 6 `ui`-prefixed presentation modifiers applied to a
+trigger view you already have (`sheet`, `confirmation-dialog`, `dialog`,
+`popover`, `tooltip`, `context-menu`). See [`docs/USAGE.md`](docs/USAGE.md)
+for a call site for each. `Scripts/UsageProbe.swift` exercises all of them,
+several right next to their real SwiftUI counterparts (`Button`, `Toggle`,
+`Slider`) or a same-named SwiftUI type (`Alert`, `Label`), to keep proving
+the no-shadowing claim as the set grows.
+
+`input-otp` is worth a callout: SwiftUI has no per-character-box text
+input, so it uses the standard workaround — a real `TextField` at ~0.01
+opacity sits under the visible digit boxes and actually captures keyboard
+input, with `.allowsHitTesting(false)` on the boxes so a tap anywhere in the
+row reaches the hidden field. See the deviation note in
+`input-otp/InputOTP.swift`.
 
 ### Parity audit (verified against real shadcn, not memory)
 
@@ -177,16 +186,23 @@ Two design calls worth knowing before you reach for these:
   compact width — a runtime behavior difference a typecheck can't catch,
   since both forms compile fine.
 
-**Not yet, coverage-wise** (the same parity audit's other finding — real
-shadcn has ~50 registry items, we have 26): accordion, aspect-ratio,
-breadcrumb, calendar, carousel, chart, collapsible, command, data-table,
-date-picker, drawer, empty, field, input-group, input-otp, item, kbd,
-menubar, navigation-menu, pagination, resizable, scroll-area, sidebar,
-slider, spinner, table, toggle-group. None of these are half-built or
-mismatched — they're simply not started. `hover-card` is the one exception:
-deliberately skipped, not missing — iOS has no cursor-hover concept on a
-touch device, so there's no honest port; `tooltip` (long-press) or
-`popover` cover what it would have been used for.
+**Not yet, coverage-wise** (real shadcn has ~50 registry items, we have
+35): accordion, calendar, carousel, chart, command, data-table,
+date-picker, drawer, field, input-group, item, menubar, navigation-menu,
+pagination, resizable, scroll-area, sidebar, table. None of these are
+half-built or mismatched — they're simply not started, and split roughly
+into three buckets: composition primitives worth building next if you're
+about to build real forms/lists (`field`, `item`, `input-group`,
+`accordion`, `pagination`, `command`); genuine engineering investment worth
+deferring until something needs one (`carousel`, `calendar`/`date-picker`,
+`table`/`data-table`, `chart`); and likely platform-gap candidates, same
+call as `hover-card` (`navigation-menu`/`menubar` — no persistent
+top-menu-bar paradigm on iOS; `sidebar` — doesn't map to iPhone; `resizable`
+— a mouse-drag concept; `scroll-area` — `ScrollView` already covers this
+with little to add). `hover-card` itself: deliberately skipped, not
+missing — iOS has no cursor-hover concept on a touch device, so there's no
+honest port; `tooltip` (long-press) or `popover` cover what it would have
+been used for.
 
 **Not yet, otherwise:** a remote registry (today `--registry` /
 `SHADCN_SWIFT_REGISTRY` are local paths), configurable namespace (the `UI`

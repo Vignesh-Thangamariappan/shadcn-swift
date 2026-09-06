@@ -17,6 +17,10 @@ struct UsageProbe: View {
     @State private var showDialog = false
     @State private var showPopover = false
     @State private var showConfirm = false
+    @State private var sliderValue = 0.4
+    @State private var alignment = "left"
+    @State private var styles: Set<String> = ["bold"]
+    @State private var otpCode = ""
 
     var body: some View {
         VStack {
@@ -66,6 +70,21 @@ struct UsageProbe: View {
                 .uiTooltip("Tooltip text")
             Text("Long-press for context menu")
                 .uiContextMenu([UI.MenuItem("Edit", action: {})])
+
+            UI.Slider(value: $sliderValue)
+            UI.Spinner()
+            Color.gray.opacity(0.3).uiAspectRatio(16.0 / 9.0).frame(maxWidth: 100)
+            UI.Kbd("⌘K")
+            UI.Collapsible {
+                Text("Advanced")
+            } content: {
+                Text("Hidden content")
+            }
+            UI.ToggleGroup(options: ["left", "center", "right"], selection: $alignment) { _ in "text.alignleft" }
+            UI.ToggleGroup(options: ["bold", "italic"], selection: $styles) { $0 }
+            UI.Empty(systemImage: "tray", title: "No messages", actionTitle: "Refresh", action: {})
+            UI.Breadcrumb([UI.BreadcrumbItem("Home", action: {}), UI.BreadcrumbItem("Settings")])
+            UI.InputOTP(length: 6, code: $otpCode)
         }
     }
 }

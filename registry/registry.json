@@ -261,6 +261,96 @@
           "files": ["ContextMenu.swift"]
         }
       }
+    },
+    {
+      "name": "slider",
+      "description": "Themed wrapper over native Slider",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Slider.swift"]
+        }
+      }
+    },
+    {
+      "name": "spinner",
+      "description": "Themed rotating loading indicator",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Spinner.swift"]
+        }
+      }
+    },
+    {
+      "name": "aspect-ratio",
+      "description": "Named passthrough over native .aspectRatio(_:contentMode:)",
+      "dependencies": [],
+      "platforms": {
+        "swiftui": {
+          "files": ["AspectRatio.swift"]
+        }
+      }
+    },
+    {
+      "name": "kbd",
+      "description": "Styled monospace pill for a keyboard shortcut",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Kbd.swift"]
+        }
+      }
+    },
+    {
+      "name": "collapsible",
+      "description": "Single expand/collapse section with an animated chevron",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Collapsible.swift"]
+        }
+      }
+    },
+    {
+      "name": "toggle-group",
+      "description": "A row of UI.Toggle sharing single- or multiple-selection state",
+      "dependencies": ["tokens", "toggle"],
+      "platforms": {
+        "swiftui": {
+          "files": ["ToggleGroup.swift"]
+        }
+      }
+    },
+    {
+      "name": "empty",
+      "description": "Icon + title + description + optional action empty-state placeholder",
+      "dependencies": ["tokens", "button"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Empty.swift"]
+        }
+      }
+    },
+    {
+      "name": "breadcrumb",
+      "description": "Horizontal path of tappable segments with chevron separators",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Breadcrumb.swift"]
+        }
+      }
+    },
+    {
+      "name": "input-otp",
+      "description": "Multi-box one-time-passcode input backed by a hidden real TextField",
+      "dependencies": ["tokens"],
+      "platforms": {
+        "swiftui": {
+          "files": ["InputOTP.swift"]
+        }
+      }
     }
   ]
 }

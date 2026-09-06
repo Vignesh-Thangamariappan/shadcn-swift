@@ -39,7 +39,7 @@ context-menu  (needs: tokens, dropdown-menu)
 ...
 ```
 
-(26 components today, not all shown here — this list changes; `shadcn-swift
+(35 components today, not all shown here — this list changes; `shadcn-swift
 list` is the source of truth, and section 4 below has a call site for each.)
 
 Add what you need — dependencies come along automatically:
@@ -224,6 +224,101 @@ UI.Toggle(systemImage: "bold", isOn: $isBold)
 UI.Toggle(systemImage: "italic", isOn: $isItalic, variant: .outline)
 UI.Toggle(systemImage: "underline", isOn: $isUnderline, size: .sm)
 ```
+
+### ToggleGroup
+
+Several `UI.Toggle` sharing selection state — single (`Binding<Option>`) or
+multiple (`Binding<Set<Option>>`):
+
+```swift
+@State private var alignment = "left"
+@State private var textStyles: Set<String> = ["bold"]
+
+UI.ToggleGroup(options: ["left", "center", "right"], selection: $alignment) {
+    ["left": "text.alignleft", "center": "text.aligncenter", "right": "text.alignright"][$0]!
+}
+
+UI.ToggleGroup(options: ["bold", "italic", "underline"], selection: $textStyles) { $0 }
+```
+
+### Slider
+
+```swift
+@State private var volume = 0.6
+
+UI.Slider(value: $volume)                     // 0...1 by default
+UI.Slider(value: $rating, in: 0...5, step: 1)
+```
+
+### Spinner
+
+```swift
+UI.Spinner()            // 20pt default
+UI.Spinner(size: 32)
+```
+
+### AspectRatio
+
+A named passthrough over native `.aspectRatio(_:contentMode:)` — real
+shadcn's own AspectRatio is the same kind of thin wrapper:
+
+```swift
+AsyncImage(url: thumbnailURL)
+    .uiAspectRatio(16.0 / 9.0)
+```
+
+### Kbd
+
+```swift
+HStack(spacing: 4) {
+    UI.Kbd("⌘")
+    UI.Kbd("K")
+}
+```
+
+### Collapsible
+
+```swift
+UI.Collapsible {
+    Text("Advanced settings").font(.headline)
+} content: {
+    Text("Hidden until expanded.")
+}
+```
+
+### Empty
+
+```swift
+UI.Empty(
+    systemImage: "tray",
+    title: "No messages",
+    description: "New messages will show up here.",
+    actionTitle: "Refresh",
+    action: { refresh() }
+)
+```
+
+### Breadcrumb
+
+```swift
+UI.Breadcrumb([
+    UI.BreadcrumbItem("Home", action: { goHome() }),
+    UI.BreadcrumbItem("Settings", action: { goToSettings() }),
+    UI.BreadcrumbItem("Profile")   // last item: no action, current page
+])
+```
+
+### InputOTP
+
+```swift
+@State private var code = ""
+
+UI.InputOTP(length: 6, code: $code)
+```
+
+Backed by a real (near-invisible) `TextField`, so the system keyboard,
+autofill, and SMS one-time-code suggestions all work normally — see the
+deviation note in `input-otp/InputOTP.swift`.
 
 ### Label
 
