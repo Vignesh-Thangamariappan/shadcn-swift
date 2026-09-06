@@ -49,3 +49,18 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct RadioGroupPreview: View {
+    @State private var plan = "pro"
+
+    var body: some View {
+        UI.RadioGroup(options: ["free", "pro", "team"], selection: $plan) { $0.capitalized }
+            .padding()
+    }
+}
+
+#Preview("RadioGroup") {
+    RadioGroupPreview()
+}
+#endif

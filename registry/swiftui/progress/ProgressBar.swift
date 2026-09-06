@@ -30,3 +30,21 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct ProgressBarPreview: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            UI.ProgressBar(value: 0)
+            UI.ProgressBar(value: 0.3)
+            UI.ProgressBar(value: 0.7)
+            UI.ProgressBar(value: 1)
+        }
+        .padding()
+    }
+}
+
+#Preview("ProgressBar") {
+    ProgressBarPreview()
+}
+#endif

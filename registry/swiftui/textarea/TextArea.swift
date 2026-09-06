@@ -65,3 +65,24 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct TextAreaPreview: View {
+    @State private var empty = ""
+    @State private var filled = "Some notes about this task."
+    @State private var invalid = ""
+
+    var body: some View {
+        VStack(spacing: 12) {
+            UI.TextArea("Write something...", text: $empty, minHeight: 72)
+            UI.TextArea("Write something...", text: $filled, minHeight: 72)
+            UI.TextArea("Required", text: $invalid, isInvalid: true, minHeight: 72)
+        }
+        .padding()
+    }
+}
+
+#Preview("TextArea") {
+    TextAreaPreview()
+}
+#endif

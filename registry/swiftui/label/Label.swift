@@ -21,3 +21,20 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct LabelPreview: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            UI.Label("Enabled label")
+            UI.Label("Disabled label")
+                .disabled(true)
+        }
+        .padding()
+    }
+}
+
+#Preview("Label") {
+    LabelPreview()
+}
+#endif

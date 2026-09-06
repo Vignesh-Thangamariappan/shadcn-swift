@@ -21,3 +21,27 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct SeparatorPreview: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            Text("Above")
+            UI.Separator()
+            Text("Below")
+
+            HStack(spacing: 12) {
+                Text("Left")
+                UI.Separator(.vertical)
+                Text("Right")
+            }
+            .frame(height: 24)
+        }
+        .padding()
+    }
+}
+
+#Preview("Separator") {
+    SeparatorPreview()
+}
+#endif

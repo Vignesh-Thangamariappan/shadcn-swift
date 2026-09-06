@@ -61,3 +61,26 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct InputPreview: View {
+    @State private var empty = ""
+    @State private var filled = "ada@example.com"
+    @State private var invalid = "not-an-email"
+    @State private var password = "hunter2"
+
+    var body: some View {
+        VStack(spacing: 12) {
+            UI.Input("Email", text: $empty)
+            UI.Input("Email", text: $filled)
+            UI.Input("Email", text: $invalid, isInvalid: true)
+            UI.Input("Password", text: $password, isSecure: true)
+        }
+        .padding()
+    }
+}
+
+#Preview("Input") {
+    InputPreview()
+}
+#endif

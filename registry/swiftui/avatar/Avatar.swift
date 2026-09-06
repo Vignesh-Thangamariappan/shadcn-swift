@@ -48,3 +48,20 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct AvatarPreview: View {
+    var body: some View {
+        HStack(spacing: 12) {
+            UI.Avatar(name: "Ada Lovelace", size: 32)
+            UI.Avatar(name: "Ada Lovelace", size: 40)
+            UI.Avatar(name: "Grace Hopper", size: 56)
+        }
+        .padding()
+    }
+}
+
+#Preview("Avatar") {
+    AvatarPreview()
+}
+#endif

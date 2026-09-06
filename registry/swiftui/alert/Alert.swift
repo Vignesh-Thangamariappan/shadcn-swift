@@ -56,3 +56,19 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct AlertPreview: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            UI.Alert("Update available", message: "Version 2.1 is ready to install.")
+            UI.Alert("Something went wrong", message: "Check your connection and try again.", variant: .destructive)
+        }
+        .padding()
+    }
+}
+
+#Preview("Alert") {
+    AlertPreview()
+}
+#endif

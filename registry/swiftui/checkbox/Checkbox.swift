@@ -50,3 +50,23 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct CheckboxPreview: View {
+    @State private var checked = true
+    @State private var unchecked = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            UI.Checkbox("Accept terms", isOn: $checked)
+            UI.Checkbox("Subscribe to updates", isOn: $unchecked)
+            UI.Checkbox(isOn: $checked)
+        }
+        .padding()
+    }
+}
+
+#Preview("Checkbox") {
+    CheckboxPreview()
+}
+#endif

@@ -52,3 +52,23 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct TabsPreview: View {
+    @State private var tab = "profile"
+
+    var body: some View {
+        UI.Tabs(
+            items: [(tag: "profile", title: "Profile"), (tag: "settings", title: "Settings")],
+            selection: $tab
+        ) { selected in
+            Text("Content for \(selected)")
+        }
+        .padding()
+    }
+}
+
+#Preview("Tabs") {
+    TabsPreview()
+}
+#endif

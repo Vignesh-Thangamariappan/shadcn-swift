@@ -272,7 +272,20 @@ UI.Tabs(
 }
 ```
 
-## 5. Verifying a change to this repo
+## 5. Seeing a component before you write any code
+
+Every component file carries its own `#Preview` block(s), gated behind
+`#if DEBUG` so none of it reaches a release build. Open the file in Xcode —
+either straight from this repo (`registry/swiftui/<name>/*.swift`) or from
+its vendored copy in your own project (`Sources/UI/<name>/*.swift`) — and
+the canvas renders that component's variants live: `UI.Button`'s three
+variants plus a disabled state, `UI.Alert`'s default and destructive
+banners, `UI.Tabs` actually switching between tabs, and so on. This is the
+same role shadcn.com's per-component demo page plays, just inside Xcode
+instead of a browser, and it travels with the component wherever `add`
+copies it.
+
+## 6. Verifying a change to this repo
 
 If you're editing components in this repo (not just consuming them):
 

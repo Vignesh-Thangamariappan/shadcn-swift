@@ -71,3 +71,24 @@ public extension UI.Button where Label == Text {
         self.init(variant: variant, action: action) { Text(titleKey) }
     }
 }
+
+#if DEBUG
+private struct ButtonPreview: View {
+    var body: some View {
+        VStack(spacing: 12) {
+            UI.Button("Primary", variant: .primary) {}
+            UI.Button("Secondary", variant: .secondary) {}
+            UI.Button(variant: .ghost, action: {}) {
+                Label("Ghost with icon", systemImage: "info.circle")
+            }
+            UI.Button("Disabled", variant: .primary) {}
+                .disabled(true)
+        }
+        .padding()
+    }
+}
+
+#Preview("Button") {
+    ButtonPreview()
+}
+#endif

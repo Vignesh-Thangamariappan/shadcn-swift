@@ -49,3 +49,23 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct CardPreview: View {
+    var body: some View {
+        VStack(spacing: 16) {
+            UI.Card(title: "Storage", actionTitle: "Manage", action: {}) {
+                Text("42 GB of 100 GB used")
+            }
+            UI.Card {
+                Text("A card with no title or action — just content.")
+            }
+        }
+        .padding()
+    }
+}
+
+#Preview("Card") {
+    CardPreview()
+}
+#endif

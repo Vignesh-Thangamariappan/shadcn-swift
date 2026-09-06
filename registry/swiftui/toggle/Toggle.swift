@@ -49,3 +49,22 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct TogglePreview: View {
+    @State private var on = true
+    @State private var off = false
+
+    var body: some View {
+        VStack(spacing: 12) {
+            UI.Toggle("On", isOn: $on)
+            UI.Toggle("Off", isOn: $off)
+        }
+        .padding()
+    }
+}
+
+#Preview("Toggle") {
+    TogglePreview()
+}
+#endif

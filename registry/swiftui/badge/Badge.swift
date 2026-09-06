@@ -52,3 +52,20 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct BadgePreview: View {
+    var body: some View {
+        HStack(spacing: 8) {
+            UI.Badge("New", variant: .primary)
+            UI.Badge("Draft", variant: .secondary)
+            UI.Badge("Beta", variant: .outline)
+        }
+        .padding()
+    }
+}
+
+#Preview("Badge") {
+    BadgePreview()
+}
+#endif

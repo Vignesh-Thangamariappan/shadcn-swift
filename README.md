@@ -37,6 +37,17 @@ Button("plain SwiftUI button") {}   // SwiftUI's own
 UI.Button("themed button") {}       // ours — no clash
 ```
 
+## Presentation references
+
+Every component ships its own `#if DEBUG` / `#Preview` block, same convention
+as EDS-iOS. Open any file under `registry/swiftui/` (or its vendored copy
+under your project's `Sources/UI/`) in Xcode and the canvas shows that
+component's variants live — the equivalent of shadcn.com's per-component demo
+page, minus the website. `#if DEBUG` means none of it reaches a release
+build. `Scripts/verify-components.sh` typechecks every preview with `-D
+DEBUG` on each change, so a broken preview fails the same way a broken
+component does.
+
 ## Layout
 
 ```

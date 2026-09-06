@@ -21,3 +21,20 @@ public extension UI {
         }
     }
 }
+
+#if DEBUG
+private struct SkeletonPreview: View {
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            UI.Skeleton().frame(width: 160, height: 16)
+            UI.Skeleton().frame(width: 220, height: 16)
+            UI.Skeleton().frame(width: 120, height: 16)
+        }
+        .padding()
+    }
+}
+
+#Preview("Skeleton") {
+    SkeletonPreview()
+}
+#endif
