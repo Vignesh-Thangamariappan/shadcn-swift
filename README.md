@@ -1,5 +1,7 @@
 # shadcn-swift
 
+[![CI](https://github.com/Vignesh-Thangamariappan/shadcn-swift/actions/workflows/ci.yml/badge.svg)](https://github.com/Vignesh-Thangamariappan/shadcn-swift/actions/workflows/ci.yml)
+
 shadcn/ui's model — own the code, don't `npm install` it — ported to SwiftUI,
 with Kotlin/Compose planned as a second platform on the same registry.
 
@@ -81,13 +83,30 @@ CLI/MCP reading the same JSON — not a fork of the registry.
 
 ## Building
 
+**Prebuilt (fastest):** grab `shadcn-swift-macos-universal.tar.gz` from the
+[latest release](https://github.com/Vignesh-Thangamariappan/shadcn-swift/releases/latest) —
+a universal (arm64 + x86_64) binary for both tools, built and verified by
+`.github/workflows/release.yml` on every `v*` tag.
+
+```bash
+tar -xzf shadcn-swift-macos-universal.tar.gz
+mv shadcn-swift shadcn-swift-mcp /usr/local/bin/
+```
+
+**From source:**
+
 ```bash
 swift build -c release
 cp .build/release/shadcn-swift .build/release/shadcn-swift-mcp /usr/local/bin/
 ```
 
 (Or skip the copy and invoke `swift run shadcn-swift ...` / `swift run
-shadcn-swift-mcp` from inside this repo — slower per-call, no install step.)
+shadcn-swift-mcp` from inside this repo — slower per-call, no install step.
+This is also the whole SPM story: `swift build`/`swift test` are what
+`.github/workflows/ci.yml` runs on every push, so "does this still work as
+a plain Swift package" is checked continuously, not just at release time —
+there's no separate SPM-specific pipeline because there's nothing
+SPM-specific left to validate beyond that.)
 
 ## Quick start
 
@@ -99,7 +118,9 @@ shadcn-swift add card   # pulls tokens + button too, dependencies first
 
 Or point a coding agent at it instead of running the CLI yourself — three
 read-only MCP tools (`list_components`, `get_component`, `resolve_plan`, no
-write tool on purpose):
+write tool on purpose — same as shadcn/ui's own MCP server, whose real
+tools are read-only too despite its marketing page; see
+[`docs/USAGE.md`](docs/USAGE.md) for the comparison):
 
 ```json
 {

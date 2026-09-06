@@ -1,0 +1,43 @@
+name: Release binaries
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Test and verify before releasing
+        run: |
+          swift test
+          Scripts/verify-components.sh
+
+      - name: Build universal (arm64 + x86_64) release binaries
+        run: swift build -c release --arch arm64 --arch x86_64
+
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp .build/apple/Products/Release/shadcn-swift dist/
+          cp .build/apple/Products/Release/shadcn-swift-mcp dist/
+          tar -czf shadcn-swift-macos-universal.tar.gz -C dist shadcn-swift shadcn-swift-mcp
+
+      # Uses the gh CLI directly (already on every GitHub-hosted runner)
+      # rather than a third-party release action -- same "no third-party
+      # dependency" reasoning as the registry's own import rule (see
+      # README), applied to the release pipeline too.
+      - name: Create GitHub Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ github.ref_name }}" \
+            shadcn-swift-macos-universal.tar.gz \
+            --title "${{ github.ref_name }}" \
+            --generate-notes

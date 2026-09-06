@@ -1,0 +1,25 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build-test-verify:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Swift version
+        run: swift --version
+
+      - name: Build (SPM)
+        run: swift build
+
+      - name: Unit tests
+        run: swift test
+
+      - name: Typecheck every registry component against the real iOS SDK
+        run: Scripts/verify-components.sh

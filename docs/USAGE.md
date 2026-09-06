@@ -6,6 +6,14 @@ exists today.
 
 ## 1. Build the tools once
 
+Prebuilt universal binaries (arm64 + x86_64) are attached to every
+[release](https://github.com/Vignesh-Thangamariappan/shadcn-swift/releases/latest) —
+download `shadcn-swift-macos-universal.tar.gz`, `tar -xzf` it, and move
+both `shadcn-swift` and `shadcn-swift-mcp` onto your `PATH`. That's the
+fast path; skip to §2 once they're installed.
+
+Building from source instead:
+
 ```bash
 cd /path/to/shadcn-swift
 swift build -c release
@@ -104,6 +112,33 @@ is that a human reviews what lands in their project, and a component they've
 hand-edited must never get silently clobbered by an agent's tool call — so
 writing stays with `shadcn-swift add`, typed by hand, or the agent's own
 normal file-write tool.
+
+**How this actually compares to shadcn/ui's own MCP server** (checked
+against their real source, not their marketing page — the two disagree):
+shadcn's docs describe their MCP server as able to install components
+"directly into your project," but its actual 7 tools
+(`list_items_in_registries`, `search_items_in_registries`,
+`view_items_in_registries`, `get_item_examples_from_registries`,
+`get_add_command_for_items`, `get_audit_checklist`, `get_project_registries`)
+are all read-only — none of them touch disk. `get_add_command_for_items`
+hands back a CLI command STRING (e.g. `pnpm dlx shadcn@latest add
+button`); a human or agent still has to run that separately for anything
+to be written. Their own docs call the server "a bridge between your AI
+assistant, component registries and the shadcn CLI" — discovery and
+orchestration, with the CLI as the actual write mechanism. So shadcn's
+real MCP is exactly as read-only as this one; it isn't a design choice
+`shadcn-swift` made in departure from shadcn's own model, it's the same
+choice, arrived at independently.
+
+Where the two mechanisms differ: shadcn's `get_add_command_for_items`
+hands the agent a *shell command to run*, and the shadcn CLI process that
+command invokes does the actual writing outside the agent's own file
+tools. `get_component` here hands the agent the actual file contents
+directly, for the agent's own file-write tool to write — which is what
+gives the agent's own diff/approval UI (Claude Code's file-write
+confirmation, Cursor's inline diff, etc.) a chance to gate the change at
+the content level. A shelled-out CLI invocation doesn't get that same
+review for free.
 
 ## 4. Using the components
 
