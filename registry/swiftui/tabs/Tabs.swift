@@ -19,14 +19,16 @@ import SwiftUI
 /// spacing is `theme.spacing.sm` (real shadcn's `Tabs` root is `gap-2` = 8px),
 /// not `md` (12px), which an earlier version used.
 ///
-/// Not replicated: real shadcn's active tab gets a translucent `bg-input/30`
-/// tint and an `input`-colored border in DARK mode specifically (light mode
-/// is a plain `background` fill with a transparent border, which this DOES
-/// match). Reproducing the dark-only variant would need per-color-scheme
-/// branching this component doesn't otherwise have — flagged, not fixed.
+/// The active tab is a plain `background` fill with no border in light
+/// mode, but real shadcn switches to a translucent `bg-input/30` tint plus
+/// an `input`-colored border in DARK mode specifically (same `dark:bg-input/
+/// 30` pattern `Button`'s `outline` variant and `Select`'s trigger already
+/// use) — that's `activeBackground`/`activeBorder` below, gated on
+/// `colorScheme`.
 public extension UI {
     struct Tabs<Tag: Hashable, Content: View>: View {
         @Environment(\.uiTheme) private var theme
+        @Environment(\.colorScheme) private var colorScheme
 
         private let items: [(tag: Tag, title: String)]
         @Binding private var selection: Tag
@@ -54,13 +56,17 @@ public extension UI {
                                 .padding(.horizontal, theme.spacing.md)
                                 .padding(.vertical, theme.spacing.sm)
                                 .frame(maxWidth: .infinity)
-                                .background(item.tag == selection ? theme.colors.background : .clear)
+                                .background(item.tag == selection ? activeBackground : .clear)
                                 .foregroundStyle(
                                     item.tag == selection
                                         ? theme.colors.foreground
                                         : theme.colors.foreground.opacity(0.6)
                                 )
                                 .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
+                                        .strokeBorder(item.tag == selection ? activeBorder : .clear, lineWidth: 1)
+                                )
                                 .uiShadow(item.tag == selection ? theme.shadow.sm : .init(color: .clear, radius: 0, y: 0))
                                 // Defensive: `.frame(maxWidth: .infinity)` above
                                 // should already make the whole cell tappable,
@@ -87,6 +93,16 @@ public extension UI {
 
                 content(selection)
             }
+        }
+
+        // Real shadcn's active trigger: `bg-background` / `dark:bg-input/30`.
+        private var activeBackground: Color {
+            colorScheme == .dark ? theme.colors.input.opacity(0.3) : theme.colors.background
+        }
+
+        // Real shadcn: no border in light mode, `dark:border-input`.
+        private var activeBorder: Color {
+            colorScheme == .dark ? theme.colors.input : .clear
         }
     }
 }

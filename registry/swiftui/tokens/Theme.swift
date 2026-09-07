@@ -3,7 +3,7 @@ import SwiftUI
 /// shadcn-swift component: tokens
 /// Namespaced under `UI` so it never shadows a SwiftUI type.
 public enum UI {
-    public struct Theme {
+    public struct Theme: Sendable {
         public var colors: Colors
         public var spacing: Spacing
         public var radius: Radius

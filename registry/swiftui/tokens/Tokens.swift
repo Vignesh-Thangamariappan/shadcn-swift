@@ -59,6 +59,14 @@ public extension UI.Theme {
         /// Focus ring — distinct from `primary`; overriding one shouldn't
         /// force re-theming the other.
         public var ring: Color
+        /// Real shadcn's dedicated 5-step chart series palette (`--chart-1`
+        /// through `--chart-5`) — separate from `primary`, and (verified live
+        /// against `apps/v4/app/globals.css`) identical in light and dark
+        /// mode, unlike every other slot here. `UI.Chart` only renders one
+        /// series today, so only `chartPalette[0]` has a caller yet — the
+        /// rest exist so a future multi-series chart doesn't need another
+        /// token pass first.
+        public var chartPalette: [Color]
 
         public init(
             primary: Color,
@@ -79,7 +87,8 @@ public extension UI.Theme {
             accent: Color,
             accentForeground: Color,
             input: Color,
-            ring: Color
+            ring: Color,
+            chartPalette: [Color] = []
         ) {
             self.primary = primary
             self.primaryForeground = primaryForeground
@@ -100,6 +109,7 @@ public extension UI.Theme {
             self.accentForeground = accentForeground
             self.input = input
             self.ring = ring
+            self.chartPalette = chartPalette
         }
 
         /// Every value below is real shadcn's actual default theme — the
@@ -151,7 +161,18 @@ public extension UI.Theme {
             // oklch(0.922 0 0) / oklch(1 0 0 / 15%) — same translucent-white pattern as `border`
             input: .dynamic(light: Color(red: 0.8982, green: 0.8982, blue: 0.8982), dark: Color.white.opacity(0.15)),
             // oklch(0.708 0 0) / oklch(0.556 0 0)
-            ring: .dynamic(light: Color(red: 0.6302, green: 0.6302, blue: 0.6302), dark: Color(red: 0.4515, green: 0.4515, blue: 0.4515))
+            ring: .dynamic(light: Color(red: 0.6302, green: 0.6302, blue: 0.6302), dark: Color(red: 0.4515, green: 0.4515, blue: 0.4515)),
+            // Tailwind's blue-300/500/600/700/800 (real shadcn's --chart-1
+            // through --chart-5, same in both light and dark mode — verified,
+            // not assumed), converted the same OKLCH -> sRGB way as every
+            // other slot above.
+            chartPalette: [
+                Color(red: 0.5566, green: 0.7732, blue: 1.0000), // chart-1, blue-300
+                Color(red: 0.1693, green: 0.4980, blue: 1.0000), // chart-2, blue-500
+                Color(red: 0.0836, green: 0.3644, blue: 0.9863), // chart-3, blue-600
+                Color(red: 0.0779, green: 0.2791, blue: 0.9018), // chart-4, blue-700
+                Color(red: 0.0998, green: 0.2338, blue: 0.7229)  // chart-5, blue-800
+            ]
         )
     }
 

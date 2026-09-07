@@ -14,6 +14,7 @@ import SwiftUI
 public extension UI {
     struct DatePicker: View {
         @Environment(\.uiTheme) private var theme
+        @Environment(\.isEnabled) private var isEnabled
         @State private var isPresented = false
 
         private let placeholder: String
@@ -56,6 +57,11 @@ public extension UI {
             }
             .buttonStyle(.plain)
             .foregroundStyle(theme.colors.foreground)
+            // A caller's `.disabled(true)` already blocks the trigger tap via
+            // the native Button's own environment handling — this was
+            // missing real shadcn's `disabled:opacity-50` VISUAL feedback,
+            // same pattern every other trigger-style component here has.
+            .opacity(isEnabled ? 1 : 0.5)
             .popover(isPresented: $isPresented) {
                 UI.Calendar(selection: $selection, isDateDisabled: isDateDisabled)
                     .presentationCompactAdaptation(.popover)

@@ -21,13 +21,12 @@ import SwiftUI
 /// joined-segment corner rounding (verified live against `toggle-group.tsx`:
 /// `rounded-none` on every item except `first:rounded-l-md`/
 /// `last:rounded-r-md`) without `ToggleGroup` needing to reach inside this
-/// file's own `clipShape`. One honest gap: real shadcn also collapses the
-/// shared border between adjacent `outline`-variant segments to a single
-/// 1px line (`border-l-0` on every item but the first); SwiftUI's
-/// `strokeBorder` has no equivalent border-collapsing model, so each
-/// segment still draws its own full border and the shared seam renders
-/// about 2x shadcn's width — a deliberate, documented simplification, not
-/// a silent one.
+/// file's own `clipShape`. It also collapses the shared border between
+/// adjacent `outline`-variant segments to a single 1px line, matching real
+/// shadcn's `border-l-0` on every item but the first: `.middle`/`.trailing`
+/// items trace only their top/right/bottom edges (`PartialBorder`, below),
+/// leaving the shared seam drawn exactly once, by the left-adjacent
+/// segment's own right edge.
 public extension UI {
     enum ToggleVariant {
         case `default`, outline
@@ -82,10 +81,7 @@ public extension UI {
                     .background(background)
                     .foregroundStyle(foreground)
                     .clipShape(cornerShape)
-                    .overlay(
-                        cornerShape
-                            .strokeBorder(variant == .outline ? theme.colors.input : .clear, lineWidth: 1)
-                    )
+                    .overlay(alignment: .center) { border }
                     .uiShadow(shadowLevel)
             }
             .buttonStyle(.plain)
@@ -99,6 +95,32 @@ public extension UI {
         // Real shadcn only applies `shadow-xs` to the `outline` variant.
         private var shadowLevel: UI.Theme.Shadow.Level {
             variant == .outline ? theme.shadow.xs : UI.Theme.Shadow.Level(color: .clear, radius: 0, y: 0)
+        }
+
+        // Real shadcn's joined row also has `border-l-0` on every segment but
+        // the first (`toggle-group.tsx`, verified live) — the shared seam
+        // between two segments is drawn ONCE, by the left segment's own
+        // right edge, not twice. `.leading`/`.standalone` keep the existing
+        // full `cornerShape` perimeter (they own the group's left edge, or
+        // aren't grouped at all); `.middle`/`.trailing` trace only their
+        // top/right/bottom edges via `PartialBorder`, omitting the left edge
+        // entirely rather than trying to paint over the redundant stroke —
+        // painting over it can't work reliably since the non-outline
+        // background is `.clear` when a segment is off.
+        @ViewBuilder
+        private var border: some View {
+            if variant == .outline {
+                switch groupPosition {
+                case .standalone, .leading:
+                    cornerShape.strokeBorder(theme.colors.input, lineWidth: 1)
+                case .middle:
+                    PartialBorder(topTrailingRadius: 0, bottomTrailingRadius: 0)
+                        .stroke(theme.colors.input, lineWidth: 1)
+                case .trailing:
+                    PartialBorder(topTrailingRadius: theme.radius.md, bottomTrailingRadius: theme.radius.md)
+                        .stroke(theme.colors.input, lineWidth: 1)
+                }
+            }
         }
 
         // Real shadcn's joined `ToggleGroup` row: `rounded-none` on every
@@ -159,6 +181,41 @@ public extension UI {
             case .lg: 40
             }
         }
+    }
+}
+
+/// Traces top+right+bottom only — no left edge. Used by `UI.Toggle`'s
+/// `.middle`/`.trailing` `groupPosition`s to reproduce real shadcn's
+/// `border-l-0` on every joined-row segment but the first, so a shared seam
+/// between two segments renders exactly once (the left segment's own right
+/// edge) instead of twice. `topTrailingRadius`/`bottomTrailingRadius` pass 0
+/// for a square-cornered middle segment, or `theme.radius.md` for the
+/// rounded trailing segment.
+private struct PartialBorder: Shape {
+    var topTrailingRadius: CGFloat
+    var bottomTrailingRadius: CGFloat
+
+    func path(in rect: CGRect) -> Path {
+        let topRadius = min(topTrailingRadius, rect.height / 2, rect.width)
+        let bottomRadius = min(bottomTrailingRadius, rect.height / 2, rect.width)
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX - topRadius, y: rect.minY))
+        if topRadius > 0 {
+            path.addArc(
+                center: CGPoint(x: rect.maxX - topRadius, y: rect.minY + topRadius),
+                radius: topRadius, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false
+            )
+        }
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - bottomRadius))
+        if bottomRadius > 0 {
+            path.addArc(
+                center: CGPoint(x: rect.maxX - bottomRadius, y: rect.maxY - bottomRadius),
+                radius: bottomRadius, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false
+            )
+        }
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        return path
     }
 }
 
