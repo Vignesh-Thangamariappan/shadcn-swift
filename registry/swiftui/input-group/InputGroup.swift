@@ -14,6 +14,10 @@ import SwiftUI
 /// `trailing:` argument label rather than a bare trailing closure — with
 /// no label, the compiler can't tell which single-slot initializer you
 /// mean and reports "ambiguous use of init".
+///
+/// Real shadcn's `input-group.tsx` container carries `shadow-xs` — missing
+/// here before `theme.shadow.xs` existed to reference (added in this
+/// repo's own token-foundation pass); now applied via `.uiShadow(_:)`.
 public extension UI {
     struct InputGroup<Leading: View, Trailing: View>: View {
         @Environment(\.uiTheme) private var theme
@@ -60,6 +64,7 @@ public extension UI {
                 RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
                     .strokeBorder(borderColor, lineWidth: isFocused ? 2 : 1)
             )
+            .uiShadow(theme.shadow.xs)
             .animation(.easeOut(duration: 0.15), value: isFocused)
         }
 

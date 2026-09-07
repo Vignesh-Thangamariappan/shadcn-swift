@@ -2,6 +2,28 @@ import SwiftUI
 
 /// shadcn-swift component: tabs
 /// depends on: tokens
+///
+/// Corner radius: outer `TabsList` container is `theme.radius.lg` (real
+/// shadcn: `rounded-lg`), the active `TabsTrigger` pill inside it is
+/// `theme.radius.md` (real shadcn: `rounded-md`) — two different tiers, not
+/// the same one. An earlier version had them backwards (`md` outer, `sm`
+/// inner).
+///
+/// List background is `theme.colors.muted` (real shadcn: `bg-muted`) — an
+/// earlier version used `secondary`, the wrong token for this literal class.
+/// The list itself has no item-to-item gap (real shadcn's default-variant
+/// `TabsList` has no `gap-*` class; separation comes purely from each
+/// trigger's own padding) and `p-[3px]` padding, hardcoded here since 3px
+/// doesn't land on any spacing tier. The active trigger gets `theme.shadow.sm`
+/// (real: `data-[state=active]:shadow-sm`) — missing before. Root-to-content
+/// spacing is `theme.spacing.sm` (real shadcn's `Tabs` root is `gap-2` = 8px),
+/// not `md` (12px), which an earlier version used.
+///
+/// Not replicated: real shadcn's active tab gets a translucent `bg-input/30`
+/// tint and an `input`-colored border in DARK mode specifically (light mode
+/// is a plain `background` fill with a transparent border, which this DOES
+/// match). Reproducing the dark-only variant would need per-color-scheme
+/// branching this component doesn't otherwise have — flagged, not fixed.
 public extension UI {
     struct Tabs<Tag: Hashable, Content: View>: View {
         @Environment(\.uiTheme) private var theme
@@ -21,8 +43,8 @@ public extension UI {
         }
 
         public var body: some View {
-            VStack(spacing: theme.spacing.md) {
-                HStack(spacing: theme.spacing.xs) {
+            VStack(spacing: theme.spacing.sm) {
+                HStack(spacing: 0) {
                     ForEach(items, id: \.tag) { item in
                         SwiftUI.Button {
                             selection = item.tag
@@ -38,14 +60,15 @@ public extension UI {
                                         ? theme.colors.foreground
                                         : theme.colors.foreground.opacity(0.6)
                                 )
-                                .clipShape(RoundedRectangle(cornerRadius: theme.radius.sm, style: .continuous))
+                                .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+                                .uiShadow(item.tag == selection ? theme.shadow.sm : .init(color: .clear, radius: 0, y: 0))
                         }
                         .buttonStyle(.plain)
                     }
                 }
-                .padding(theme.spacing.xs / 2)
-                .background(theme.colors.secondary)
-                .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+                .padding(3)
+                .background(theme.colors.muted)
+                .clipShape(RoundedRectangle(cornerRadius: theme.radius.lg, style: .continuous))
 
                 content(selection)
             }

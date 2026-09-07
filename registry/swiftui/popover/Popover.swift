@@ -28,9 +28,18 @@ public extension UI {
 
         public var body: some View {
             content()
-                .padding(theme.spacing.md)
+                // real shadcn: `rounded-md border bg-popover p-4 text-popover-foreground
+                // shadow-md` — this was missing its border, radius, and shadow entirely,
+                // and used `spacing.md` (12) where real `p-4` is 16 (`spacing.lg`).
+                .padding(theme.spacing.lg)
                 .foregroundStyle(theme.colors.popoverForeground)
                 .background(theme.colors.popover)
+                .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+                .overlay(
+                    RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
+                        .strokeBorder(theme.colors.border, lineWidth: 1)
+                )
+                .uiShadow(theme.shadow.md) // real shadcn's popover content has `shadow-md`
         }
     }
 }

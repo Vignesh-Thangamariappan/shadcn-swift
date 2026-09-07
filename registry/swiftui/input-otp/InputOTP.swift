@@ -14,6 +14,7 @@ import SwiftUI
 public extension UI {
     struct InputOTP: View {
         @Environment(\.uiTheme) private var theme
+        @Environment(\.isEnabled) private var isEnabled
         @FocusState private var isFocused: Bool
 
         @Binding private var code: String
@@ -45,8 +46,13 @@ public extension UI {
                 .allowsHitTesting(false)
             }
             .fixedSize(horizontal: false, vertical: true)
+            .opacity(isEnabled ? 1 : 0.5)
         }
 
+        // Real shadcn's slot is `h-9 w-9` (36×36, square) with `text-sm`
+        // (14pt, regular weight) digits — this was 40×48 (a tall rectangle)
+        // with 20pt bold monospaced digits, both fetched-and-verified
+        // mismatches against `input-otp.tsx`'s `InputOTPSlot`.
         @ViewBuilder
         private func digitBox(at index: Int) -> some View {
             let characters = Array(code)
@@ -55,12 +61,13 @@ public extension UI {
             RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
                 .strokeBorder(isActive ? theme.colors.ring : theme.colors.input, lineWidth: isActive ? 2 : 1)
                 .background(theme.colors.background)
-                .frame(width: 40, height: 48)
+                .frame(width: 36, height: 36)
                 .overlay(
                     Text(index < characters.count ? String(characters[index]) : "")
-                        .font(.system(size: 20, weight: .medium, design: .monospaced))
+                        .font(theme.typography.body)
                         .foregroundStyle(theme.colors.foreground)
                 )
+                .uiShadow(theme.shadow.xs)
         }
     }
 }

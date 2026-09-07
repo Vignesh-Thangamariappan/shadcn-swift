@@ -2,6 +2,15 @@ import SwiftUI
 
 /// shadcn-swift component: empty
 /// depends on: tokens, button
+///
+/// Two real discrepancies against shadcn's `empty.tsx` (fetched live, not
+/// memory), both fixed here: `EmptyTitle` is `text-lg font-medium`
+/// (`theme.typography.title` at `.medium`, not its default `.semibold`) —
+/// this file had `theme.typography.label` (14pt), the wrong SIZE, not
+/// just the wrong weight. And `EmptyMedia`'s icon variant renders the
+/// icon inside a `size-10 rounded-lg bg-muted` badge with `text-foreground`
+/// — this file rendered a bare SF Symbol with no container, in
+/// `mutedForeground` instead of `foreground`.
 public extension UI {
     struct Empty: View {
         @Environment(\.uiTheme) private var theme
@@ -29,11 +38,15 @@ public extension UI {
         public var body: some View {
             VStack(spacing: theme.spacing.sm) {
                 Image(systemName: systemImage)
-                    .font(.system(size: 32))
-                    .foregroundStyle(theme.colors.mutedForeground)
+                    .font(.system(size: 24))
+                    .foregroundStyle(theme.colors.foreground)
+                    .frame(width: 40, height: 40)
+                    .background(theme.colors.muted)
+                    .clipShape(RoundedRectangle(cornerRadius: theme.radius.lg, style: .continuous))
 
                 Text(title)
-                    .font(theme.typography.label)
+                    .font(theme.typography.title)
+                    .fontWeight(.medium)
                     .foregroundStyle(theme.colors.foreground)
 
                 if let description {

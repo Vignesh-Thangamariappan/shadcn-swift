@@ -11,6 +11,18 @@ import SwiftUI
 /// height (it doesn't measure per-page content and adapt), so `height`
 /// is a required-ish parameter (defaults to 200) rather than something
 /// that hugs arbitrary content — pass your own if pages aren't ~200pt tall.
+///
+/// Real shadcn's Carousel has NO dot indicators — only `CarouselPrevious`/
+/// `CarouselNext`, a pair of small circular outline icon buttons
+/// (`size-8 rounded-full`, real shadcn `Button` `variant="outline"
+/// size="icon"`), since it targets mouse/keyboard navigation. This port
+/// deliberately swaps that for dot page-indicators instead: a touch
+/// carousel is swiped, not clicked, so a `UIPageControl`-style affordance
+/// is the idiomatic native equivalent — not a fetched real-shadcn class,
+/// a platform substitution, same spirit as `sidebar` swapping desktop
+/// collapse behavior for `NavigationSplitView`. Flagged explicitly (this
+/// file previously didn't call out that shadcn ships no dots at all) so
+/// it isn't mistaken for an unverified gap in a future parity pass.
 public extension UI {
     struct Carousel<Content: View>: View {
         @Environment(\.uiTheme) private var theme

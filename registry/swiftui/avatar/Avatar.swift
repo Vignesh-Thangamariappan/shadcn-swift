@@ -10,7 +10,10 @@ public extension UI {
         private let imageURL: URL?
         private let size: CGFloat
 
-        public init(name: String, imageURL: URL? = nil, size: CGFloat = 40) {
+        // Default matches real shadcn's `size-8` (32pt) default avatar size,
+        // not the previous 40 (which is actually real shadcn's "lg" tier,
+        // `size-10`).
+        public init(name: String, imageURL: URL? = nil, size: CGFloat = 32) {
             self.name = name
             self.imageURL = imageURL
             self.size = size
@@ -18,7 +21,9 @@ public extension UI {
 
         public var body: some View {
             ZStack {
-                Circle().fill(theme.colors.secondary)
+                // Real shadcn's AvatarFallback is `bg-muted`/`text-muted-foreground`,
+                // not `secondary` — a real fetched mismatch, not a stylistic choice.
+                Circle().fill(theme.colors.muted)
 
                 if let imageURL {
                     AsyncImage(url: imageURL) { phase in
@@ -38,8 +43,12 @@ public extension UI {
 
         private var initials: some View {
             Text(Self.initials(from: name))
-                .font(.system(size: size * 0.4, weight: .medium))
-                .foregroundStyle(theme.colors.secondaryForeground)
+                // Real shadcn's AvatarFallback text is fixed at `text-sm`(14),
+                // dropping to `text-xs`(12) only at the `sm` size tier
+                // (`size-6`=24pt) — not a continuous proportional scale like
+                // the previous `size * 0.4` here, which matched neither.
+                .font(.system(size: size <= 24 ? 12 : 14, weight: .medium))
+                .foregroundStyle(theme.colors.mutedForeground)
         }
 
         private static func initials(from name: String) -> String {

@@ -12,6 +12,21 @@ import SwiftUI
 /// Uses `card`/`cardForeground` for its surface (real shadcn's Alert is
 /// `bg-card text-card-foreground`) and `mutedForeground` for the secondary
 /// message line, matching shadcn's `text-muted-foreground` on that element.
+///
+/// Corner radius is `theme.radius.lg` — real shadcn's Alert is `rounded-lg`.
+/// An earlier version used `md`, one tier too tight.
+///
+/// The border is always plain `theme.colors.border`, in BOTH variants — real
+/// shadcn's `alertVariants` cva only tints TEXT (`text-destructive` on the
+/// container, `text-destructive/90` on the description) for the destructive
+/// variant; its base `border` class carries no variant override at all. An
+/// earlier version tinted the border to `primary`/`destructive`, which real
+/// shadcn never does. Same fix applies to the icon and title: shadcn's icon
+/// is `[&>svg]:text-current` (inherits the container's text color) and the
+/// title sets no color of its own — so both simply follow the container's
+/// text color (`cardForeground` default / `destructive` when destructive),
+/// they don't independently reach for `primary` the way an earlier version
+/// did for the default variant.
 public extension UI {
     enum AlertVariant {
         case `default`, destructive
@@ -33,30 +48,30 @@ public extension UI {
         public var body: some View {
             HStack(alignment: .top, spacing: theme.spacing.sm) {
                 Image(systemName: variant == .destructive ? "exclamationmark.triangle.fill" : "info.circle.fill")
-                    .foregroundStyle(tint)
+                    .foregroundStyle(contentColor)
 
                 VStack(alignment: .leading, spacing: theme.spacing.xs) {
                     Text(title)
                         .font(theme.typography.label)
-                        .foregroundStyle(theme.colors.cardForeground)
+                        .foregroundStyle(contentColor)
                     if let message {
                         Text(message)
                             .font(theme.typography.body)
-                            .foregroundStyle(theme.colors.mutedForeground)
+                            .foregroundStyle(variant == .destructive ? theme.colors.destructive.opacity(0.9) : theme.colors.mutedForeground)
                     }
                 }
             }
             .padding(theme.spacing.md)
             .background(theme.colors.card)
-            .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: theme.radius.lg, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
-                    .strokeBorder(tint.opacity(0.4), lineWidth: 1)
+                RoundedRectangle(cornerRadius: theme.radius.lg, style: .continuous)
+                    .strokeBorder(theme.colors.border, lineWidth: 1)
             )
         }
 
-        private var tint: Color {
-            variant == .destructive ? theme.colors.destructive : theme.colors.primary
+        private var contentColor: Color {
+            variant == .destructive ? theme.colors.destructive : theme.colors.cardForeground
         }
     }
 }

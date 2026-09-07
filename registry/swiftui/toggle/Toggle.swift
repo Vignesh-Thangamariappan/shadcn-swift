@@ -9,6 +9,13 @@ import SwiftUI
 /// called "toggle") is shadcn's separate `Switch` component; see
 /// registry/swiftui/switch. Variants/sizes match shadcn's stock Toggle:
 /// `default | outline`, `sm | default | lg`.
+///
+/// Corner radius is `theme.radius.md` — real shadcn's Toggle is
+/// `rounded-md`. An earlier version used `sm`, one tier too tight.
+///
+/// Horizontal padding and the square minimum width trace to real shadcn's
+/// actual per-size classes (`h-9 min-w-9 px-2` etc., fetched live from
+/// `toggle.tsx`) — an earlier version's padding was roughly double these.
 public extension UI {
     enum ToggleVariant {
         case `default`, outline
@@ -46,17 +53,24 @@ public extension UI {
                 label()
                     .font(theme.typography.label)
                     .padding(.horizontal, horizontalPadding)
+                    .frame(minWidth: height) // real shadcn's `min-w-9/8/10` — square minimum, for icon-only use
                     .frame(height: height)
                     .background(background)
                     .foregroundStyle(foreground)
-                    .clipShape(RoundedRectangle(cornerRadius: theme.radius.sm, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: theme.radius.sm, style: .continuous)
+                        RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
                             .strokeBorder(variant == .outline ? theme.colors.input : .clear, lineWidth: 1)
                     )
+                    .uiShadow(shadowLevel)
             }
             .buttonStyle(.plain)
             .opacity(isEnabled ? 1 : 0.5)
+        }
+
+        // Real shadcn only applies `shadow-xs` to the `outline` variant.
+        private var shadowLevel: UI.Theme.Shadow.Level {
+            variant == .outline ? theme.shadow.xs : UI.Theme.Shadow.Level(color: .clear, radius: 0, y: 0)
         }
 
         private var background: Color {
@@ -67,11 +81,13 @@ public extension UI {
             isOn ? theme.colors.accentForeground : theme.colors.foreground
         }
 
+        // Real shadcn: sm=`px-1.5`(6), default=`px-2`(8), lg=`px-2.5`(10) —
+        // these were roughly double real shadcn's values.
         private var horizontalPadding: CGFloat {
             switch size {
-            case .sm: 8
-            case .default: 12
-            case .lg: 16
+            case .sm: 6
+            case .default: 8
+            case .lg: 10
             }
         }
 

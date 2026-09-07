@@ -10,6 +10,7 @@ import SwiftUI
 public extension UI {
     struct Combobox: View {
         @Environment(\.uiTheme) private var theme
+        @Environment(\.isEnabled) private var isEnabled
         @State private var isPresented = false
         @State private var query = ""
 
@@ -24,12 +25,16 @@ public extension UI {
         }
 
         public var body: some View {
+            // Real shadcn's combobox trigger is literally `<Button variant="outline">`
+            // (verified against the actual combobox-demo.tsx) — bg-background,
+            // shadow-xs, h-9, disabled:opacity-50 — matched below even though this
+            // doesn't reuse UI.Button itself (own sheet-presentation lifecycle).
             SwiftUI.Button {
                 isPresented = true
             } label: {
                 HStack {
                     Text(selection.isEmpty ? placeholder : selection)
-                        .foregroundStyle(selection.isEmpty ? theme.colors.foreground.opacity(0.4) : theme.colors.foreground)
+                        .foregroundStyle(selection.isEmpty ? theme.colors.mutedForeground : theme.colors.foreground)
                     Spacer()
                     Image(systemName: "chevron.up.chevron.down")
                         .font(.system(size: 12))
@@ -37,14 +42,17 @@ public extension UI {
                 }
                 .padding(.horizontal, theme.spacing.md)
                 .padding(.vertical, theme.spacing.sm)
+                .frame(height: 36)
                 .background(theme.colors.background)
                 .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
                         .strokeBorder(theme.colors.input, lineWidth: 1)
                 )
+                .uiShadow(theme.shadow.xs)
             }
             .buttonStyle(.plain)
+            .opacity(isEnabled ? 1 : 0.5)
             .sheet(isPresented: $isPresented) {
                 NavigationStack {
                     List(filtered, id: \.self) { option in

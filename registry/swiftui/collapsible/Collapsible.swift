@@ -2,6 +2,16 @@ import SwiftUI
 
 /// shadcn-swift component: collapsible
 /// depends on: tokens
+///
+/// Real shadcn's Collapsible ships with NO visual chrome at all — Root/
+/// Trigger/Content carry zero className styling; the consumer supplies
+/// their own trigger row, chevron, and animation from scratch every time.
+/// This port deliberately adds a default trigger row (label + auto-rotating
+/// chevron) as an ergonomic default, the same kind of value-add `UI.Alert`
+/// makes with its auto-selected icon — not a real-shadcn class this is
+/// matching, since there's no real-shadcn chrome here to match. Flagged
+/// explicitly here (this file previously had no comment at all noting the
+/// deviation) so it doesn't get mistaken for an unverified parity gap.
 public extension UI {
     struct Collapsible<Label: View, Content: View>: View {
         @Environment(\.uiTheme) private var theme

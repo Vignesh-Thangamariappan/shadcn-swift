@@ -12,6 +12,8 @@ import SwiftUI
 public extension UI {
     struct TextArea: View {
         @Environment(\.uiTheme) private var theme
+        @Environment(\.isEnabled) private var isEnabled
+        @Environment(\.colorScheme) private var colorScheme
         @FocusState private var isFocused: Bool
 
         private let placeholder: String
@@ -23,7 +25,7 @@ public extension UI {
             _ placeholder: String,
             text: Binding<String>,
             isInvalid: Bool = false,
-            minHeight: CGFloat = 96
+            minHeight: CGFloat = 64 // real shadcn's `min-h-16`
         ) {
             self.placeholder = placeholder
             self._text = text
@@ -48,20 +50,29 @@ public extension UI {
                         .allowsHitTesting(false)
                 }
             }
-            .padding(theme.spacing.sm)
+            .padding(.horizontal, theme.spacing.md) // real `px-3`
+            .padding(.vertical, theme.spacing.sm)   // real `py-2`
             .frame(minHeight: minHeight)
-            .background(theme.colors.background)
+            .background(fieldBackground)
             .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
                     .strokeBorder(borderColor, lineWidth: isFocused ? 2 : 1)
             )
+            .uiShadow(theme.shadow.xs)
+            .opacity(isEnabled ? 1 : 0.5)
             .animation(.easeOut(duration: 0.15), value: isFocused)
         }
 
         private var borderColor: Color {
             if isInvalid { return theme.colors.destructive }
             return isFocused ? theme.colors.ring : theme.colors.input
+        }
+
+        // Same reasoning as UI.Input: real shadcn is transparent in light
+        // mode, `dark:bg-input/30` in dark — not one flat fill.
+        private var fieldBackground: Color {
+            colorScheme == .dark ? theme.colors.input.opacity(0.3) : .clear
         }
     }
 }

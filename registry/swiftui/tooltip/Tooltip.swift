@@ -35,11 +35,20 @@ public extension UI {
                     isPresented = true
                 }
                 .popover(isPresented: $isPresented) {
+                    // Real shadcn's tooltip surface is `bg-foreground text-background` —
+                    // an inverted surface, NOT `popover`/`popoverForeground` like every
+                    // other overlay here (verified against the actual tooltip.tsx; this
+                    // was a genuine mix-up in the previous version). Text is `text-xs`
+                    // with no weight class (regular), so this doesn't reuse
+                    // `theme.typography.caption` (which bakes in `.medium` for Badge's
+                    // `text-xs font-medium` — a different real class).
                     Text(text)
-                        .font(theme.typography.label)
-                        .foregroundStyle(theme.colors.popoverForeground)
-                        .padding(theme.spacing.sm)
-                        .background(theme.colors.popover)
+                        .font(.system(size: 12))
+                        .foregroundStyle(theme.colors.background)
+                        .padding(.horizontal, theme.spacing.md)
+                        .padding(.vertical, 6) // real `py-1.5` (6px) — doesn't land on an existing spacing tier
+                        .background(theme.colors.foreground)
+                        .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
                         .presentationCompactAdaptation(.popover)
                 }
         }

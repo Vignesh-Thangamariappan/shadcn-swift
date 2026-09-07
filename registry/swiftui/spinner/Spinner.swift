@@ -14,7 +14,9 @@ public extension UI {
 
         private let size: CGFloat
 
-        public init(size: CGFloat = 20) {
+        // Real shadcn's Spinner (Loader2Icon) is `size-4` = 16pt by default,
+        // not 20 — verified against the live `spinner.tsx` source.
+        public init(size: CGFloat = 16) {
             self.size = size
         }
 
@@ -25,7 +27,8 @@ public extension UI {
                 .frame(width: size, height: size)
                 .rotationEffect(.degrees(isRotating ? 360 : 0))
                 .onAppear {
-                    withAnimation(.linear(duration: 0.8).repeatForever(autoreverses: false)) {
+                    // Tailwind's `animate-spin` is `1s linear infinite`, not 0.8s.
+                    withAnimation(.linear(duration: 1.0).repeatForever(autoreverses: false)) {
                         isRotating = true
                     }
                 }

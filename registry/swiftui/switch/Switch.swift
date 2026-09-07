@@ -18,18 +18,23 @@ public extension UI {
     struct SwitchToggleStyle: ToggleStyle {
         let theme: UI.Theme
 
+        // Real shadcn's default-size Switch is `h-[1.15rem] w-8` (18.4×32pt)
+        // with a `size-4` (16pt) thumb — this was 24×44 with a hardcoded
+        // circle inset, noticeably larger than the real control on every
+        // dimension. Off-state track is `bg-input`, not `secondary`
+        // (`secondary` is a button-variant background, an unrelated slot).
         public func makeBody(configuration: Configuration) -> some View {
             Button {
                 configuration.isOn.toggle()
             } label: {
-                RoundedRectangle(cornerRadius: 999, style: .continuous)
-                    .fill(configuration.isOn ? theme.colors.primary : theme.colors.secondary)
-                    .frame(width: 44, height: 24)
+                Capsule()
+                    .fill(configuration.isOn ? theme.colors.primary : theme.colors.input)
+                    .frame(width: 32, height: 18)
                     .overlay(
                         Circle()
                             .fill(theme.colors.background)
-                            .padding(2)
-                            .offset(x: configuration.isOn ? 10 : -10)
+                            .frame(width: 16, height: 16)
+                            .offset(x: configuration.isOn ? 7 : -7)
                     )
                     .animation(.easeOut(duration: 0.15), value: configuration.isOn)
             }
@@ -39,6 +44,7 @@ public extension UI {
 
     struct Switch: View {
         @Environment(\.uiTheme) private var theme
+        @Environment(\.isEnabled) private var isEnabled
 
         private let label: String
         @Binding private var isOn: Bool
@@ -53,6 +59,7 @@ public extension UI {
                 .toggleStyle(SwitchToggleStyle(theme: theme))
                 .font(theme.typography.body)
                 .foregroundStyle(theme.colors.foreground)
+                .opacity(isEnabled ? 1 : 0.5)
         }
     }
 }

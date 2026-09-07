@@ -186,15 +186,18 @@ MyRootView()
         UI.Theme(
             colors: .default,          // or your own UI.Theme.Colors(...)
             spacing: .default,
-            radius: UI.Theme.Radius(sm: 4, md: 6, lg: 10),
-            typography: .default
+            radius: UI.Theme.Radius(sm: 4, md: 6, lg: 10, xl: 14),
+            typography: .default,      // or your own UI.Theme.Typography(caption:body:label:title:)
+            shadow: .default           // optional — defaults to .default if omitted
         )
     )
 ```
 
-`UI.Theme.Colors` mirrors real shadcn's stock token set: `primary`/
-`primaryForeground`, `secondary`/`secondaryForeground`, `background`,
-`foreground`, `border`, `destructive`, `card`/`cardForeground`, `popover`/
+`UI.Theme.Colors` mirrors real shadcn's stock token set — including explicit
+light/dark values for every slot, converted from shadcn's own OKLCH theme,
+not iOS system dynamic colors: `primary`/`primaryForeground`, `secondary`/
+`secondaryForeground`, `background`, `foreground`, `border`, `destructive`/
+`destructiveForeground`, `card`/`cardForeground`, `popover`/
 `popoverForeground`, `muted`/`mutedForeground`, `accent`/
 `accentForeground`, `input`, `ring`. If you're customizing the theme,
 match each token to the SURFACE it names (e.g. `popover` for popover/select/
@@ -202,6 +205,11 @@ combobox/tooltip content, `muted`/`mutedForeground` for skeleton fill and
 secondary text) rather than reusing `background`/`primary` everywhere —
 that's the exact conflation a parity audit against real shadcn caught and
 fixed in this repo's own components.
+
+`UI.Theme.Typography` has four tiers now (`caption`/`body`/`label`/`title`),
+each traced to a real shadcn Tailwind class — see the doc comment on
+`UI.Theme.Typography` in `tokens/Tokens.swift` for the exact mapping.
+`UI.Theme.Shadow` provides `.xs`/`.sm` levels, applied via `.uiShadow(_:)`.
 
 ### Button
 

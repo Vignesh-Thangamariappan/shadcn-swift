@@ -15,6 +15,17 @@ import SwiftUI
 /// own view (same content-closure shape as UI.Tabs/UI.Accordion) so a row
 /// can lay out cells however its data actually needs — this component
 /// only owns the header row and the separators between rows.
+///
+/// Header text is `theme.colors.foreground` (real shadcn's `TableHead` is
+/// `text-foreground`) — an earlier version used `mutedForeground`, which is
+/// real shadcn's `TableCaption` color, not the header's. Cell/header padding
+/// is `theme.spacing.sm` on both axes (real: `p-2`/`px-2`) — an earlier
+/// version only padded vertically.
+///
+/// Not built (feature gaps, not styling bugs — out of scope for a value-
+/// level parity pass): row selected-state background (`data-[state=selected]:bg-muted`,
+/// needs a selection binding this API doesn't have), `TableFooter`
+/// (`border-t bg-muted/50`), `TableCaption` (`text-sm text-muted-foreground`).
 public extension UI {
     struct TableColumn: Identifiable {
         public let id = UUID()
@@ -44,17 +55,17 @@ public extension UI {
                     ForEach(columns) { column in
                         Text(column.title)
                             .font(theme.typography.label)
-                            .foregroundStyle(theme.colors.mutedForeground)
+                            .foregroundStyle(theme.colors.foreground)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-                .padding(.vertical, theme.spacing.sm)
+                .padding(theme.spacing.sm)
 
                 UI.Separator()
 
                 ForEach(0..<rowCount, id: \.self) { index in
                     row(index)
-                        .padding(.vertical, theme.spacing.sm)
+                        .padding(theme.spacing.sm)
 
                     if index < rowCount - 1 {
                         UI.Separator()

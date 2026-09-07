@@ -10,6 +10,16 @@ import SwiftUI
 /// item-model type. `allowsMultipleExpanded: false` (shadcn's "single"
 /// type) collapses any other open item when one opens; `true` (shadcn's
 /// "multiple") leaves them independent.
+///
+/// Trigger vertical padding is `theme.spacing.lg` (real shadcn: `py-4` =
+/// 16px) on the trigger row itself, with expanded content getting only
+/// bottom padding at the same size (real: `pt-0 pb-4`) — an earlier version
+/// put `sm` (8px) padding around the whole trigger+content group instead,
+/// which was both the wrong size and applied to the wrong element. The
+/// chevron is `theme.colors.mutedForeground` (real: the icon is explicitly
+/// `text-muted-foreground`, NOT inherited from the trigger's own text
+/// color) — an earlier version painted it the same `foreground` as the
+/// title text, which real shadcn does not do.
 public extension UI {
     struct Accordion<Tag: Hashable, Content: View>: View {
         @Environment(\.uiTheme) private var theme
@@ -34,26 +44,28 @@ public extension UI {
         public var body: some View {
             VStack(spacing: 0) {
                 ForEach(items, id: \.tag) { item in
-                    VStack(alignment: .leading, spacing: theme.spacing.sm) {
+                    VStack(alignment: .leading, spacing: 0) {
                         SwiftUI.Button {
                             withAnimation(.easeOut(duration: 0.2)) { toggle(item.tag) }
                         } label: {
                             HStack {
                                 Text(item.title)
                                     .font(theme.typography.label)
+                                    .foregroundStyle(theme.colors.foreground)
                                 Spacer()
                                 Image(systemName: "chevron.down")
+                                    .foregroundStyle(theme.colors.mutedForeground)
                                     .rotationEffect(.degrees(expanded.contains(item.tag) ? 180 : 0))
                             }
                         }
                         .buttonStyle(.plain)
-                        .foregroundStyle(theme.colors.foreground)
+                        .padding(.vertical, theme.spacing.lg)
 
                         if expanded.contains(item.tag) {
                             content(item.tag)
+                                .padding(.bottom, theme.spacing.lg)
                         }
                     }
-                    .padding(.vertical, theme.spacing.sm)
 
                     if item.tag != items.last?.tag {
                         UI.Separator()

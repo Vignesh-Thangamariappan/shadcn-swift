@@ -7,6 +7,11 @@ import SwiftUI
 /// Foundation has NSProgress imported as Progress — the UI namespace would
 /// keep either from clashing, but a name that isn't a near-duplicate of an
 /// existing SwiftUI/Foundation type is one less thing to double-take on.
+///
+/// Track color is `theme.colors.primary` at 20% opacity — real shadcn's
+/// `progress.tsx` root is `bg-primary/20`. This file previously used
+/// `theme.colors.secondary` for the track, an unrelated token real shadcn
+/// doesn't reference here at all.
 public extension UI {
     struct ProgressBar: View {
         @Environment(\.uiTheme) private var theme
@@ -19,7 +24,7 @@ public extension UI {
         public var body: some View {
             GeometryReader { proxy in
                 ZStack(alignment: .leading) {
-                    Capsule().fill(theme.colors.secondary)
+                    Capsule().fill(theme.colors.primary.opacity(0.2))
                     Capsule()
                         .fill(theme.colors.primary)
                         .frame(width: proxy.size.width * value)

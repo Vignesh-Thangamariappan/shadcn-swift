@@ -42,12 +42,17 @@ public extension UI {
                 }
                 .padding(.horizontal, theme.spacing.md)
                 .padding(.vertical, theme.spacing.sm)
+                // real shadcn's Button `outline` variant is `border
+                // bg-background shadow-xs` — height `h-9` (36px). This was
+                // missing the shadow and not enforcing a fixed height.
+                .frame(minHeight: 36)
                 .background(theme.colors.background)
                 .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
                 .overlay(
                     RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
                         .strokeBorder(theme.colors.input, lineWidth: 1)
                 )
+                .uiShadow(theme.shadow.xs)
             }
             .buttonStyle(.plain)
             .foregroundStyle(theme.colors.foreground)

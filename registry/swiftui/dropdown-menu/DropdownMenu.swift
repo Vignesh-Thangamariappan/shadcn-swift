@@ -54,9 +54,40 @@ public extension UI {
     }
 }
 
-public extension UI.DropdownMenu where Label == Text {
-    init(_ title: String, items: [UI.MenuItem]) {
-        self.init(items: items) { Text(title) }
+public extension UI.DropdownMenu {
+    /// Real shadcn's dropdown-menu demo triggers from `<Button
+    /// variant="outline">` (verified against the actual
+    /// `dropdown-menu-demo.tsx`) — a bare `Text` trigger, which this used to
+    /// render, doesn't read as tappable at all. Styled inline to match an
+    /// outline button's chrome rather than depending on `UI.Button` itself:
+    /// this component's registry dependency list is `[tokens]` only, and
+    /// adding a cross-component dependency here is a registry.json change
+    /// outside a per-component style fix's scope.
+    init(_ title: String, items: [UI.MenuItem]) where Label == AnyView {
+        self.init(items: items) {
+            AnyView(DropdownMenuOutlineTriggerLabel(title: title))
+        }
+    }
+}
+
+private struct DropdownMenuOutlineTriggerLabel: View {
+    @Environment(\.uiTheme) private var theme
+    let title: String
+
+    var body: some View {
+        Text(title)
+            .font(theme.typography.body)
+            .foregroundStyle(theme.colors.foreground)
+            .padding(.horizontal, theme.spacing.md)
+            .padding(.vertical, theme.spacing.sm)
+            .frame(height: 36)
+            .background(theme.colors.background)
+            .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
+                    .strokeBorder(theme.colors.input, lineWidth: 1)
+            )
+            .uiShadow(theme.shadow.xs)
     }
 }
 

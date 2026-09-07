@@ -25,6 +25,7 @@ public extension UI {
     struct Button<Label: View>: View {
         @Environment(\.uiTheme) private var theme
         @Environment(\.isEnabled) private var isEnabled
+        @Environment(\.colorScheme) private var colorScheme
 
         private let variant: ButtonVariant
         private let size: ButtonSize
@@ -59,6 +60,10 @@ public extension UI {
                             .strokeBorder(border, lineWidth: variant == .outline ? 1 : 0)
                     )
                     .underline(variant == .link)
+                    // Real shadcn's `outline` variant alone carries `shadow-xs`
+                    // (verified against the live `button.tsx` source) — every
+                    // other variant is shadowless.
+                    .uiShadow(variant == .outline ? theme.shadow.xs : UI.Theme.Shadow.Level(color: .clear, radius: 0, y: 0))
             }
             .buttonStyle(.plain)
             .opacity(isEnabled ? 1 : 0.5)
@@ -86,11 +91,16 @@ public extension UI {
             }
         }
 
+        // real shadcn's `outline` (`bg-background`/`dark:bg-input/30`) and
+        // `destructive` (`dark:bg-destructive/60`) variants both carry a
+        // light/dark-specific background that a single flat token can't
+        // express — verified against the live `button.tsx` source, same
+        // fetch this file's other doc comments already cite.
         private var background: Color {
             switch variant {
             case .default: theme.colors.primary
-            case .destructive: theme.colors.destructive
-            case .outline: .clear
+            case .destructive: colorScheme == .dark ? theme.colors.destructive.opacity(0.6) : theme.colors.destructive
+            case .outline: colorScheme == .dark ? theme.colors.input.opacity(0.3) : theme.colors.background
             case .secondary: theme.colors.secondary
             case .ghost: .clear
             case .link: .clear

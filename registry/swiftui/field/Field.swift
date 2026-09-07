@@ -11,6 +11,18 @@ import SwiftUI
 /// doesn't mean manually wiring UI.Label + UI.Input + an error Text at
 /// every call site. Wraps ANY control — UI.Input, UI.TextArea, UI.Select,
 /// UI.Checkbox, a bare Picker, whatever — since `Control` is generic.
+///
+/// Real shadcn's `field.tsx` is a much larger family (`FieldSet`,
+/// `FieldLegend`, `FieldGroup`, horizontal/responsive orientation,
+/// `FieldSeparator`, a bordered/checked-state `FieldLabel` variant for
+/// radio-card-style selection UIs) — not ported here; this covers the
+/// single most common case (a standalone vertical label+control+
+/// description field) and is a real, larger gap than a token fix, left for
+/// a dedicated follow-up. What WAS fixed here: `FieldDescription`/
+/// `FieldError` are real shadcn's `text-sm font-normal` (regular weight)
+/// — this file had `theme.typography.label` (medium weight) on both,
+/// and the outer gap was `theme.spacing.xs` (4px) where real `Field`'s
+/// own gap is `gap-3` (12px, `theme.spacing.md`).
 public extension UI {
     struct Field<Control: View>: View {
         @Environment(\.uiTheme) private var theme
@@ -33,7 +45,7 @@ public extension UI {
         }
 
         public var body: some View {
-            VStack(alignment: .leading, spacing: theme.spacing.xs) {
+            VStack(alignment: .leading, spacing: theme.spacing.md) {
                 if let label {
                     UI.Label(label)
                 }
@@ -42,11 +54,11 @@ public extension UI {
 
                 if let error {
                     Text(error)
-                        .font(theme.typography.label)
+                        .font(theme.typography.body)
                         .foregroundStyle(theme.colors.destructive)
                 } else if let description {
                     Text(description)
-                        .font(theme.typography.label)
+                        .font(theme.typography.body)
                         .foregroundStyle(theme.colors.mutedForeground)
                 }
             }

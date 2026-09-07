@@ -8,19 +8,22 @@ public enum UI {
         public var spacing: Spacing
         public var radius: Radius
         public var typography: Typography
+        public var shadow: Shadow
 
-        public init(colors: Colors, spacing: Spacing, radius: Radius, typography: Typography) {
+        public init(colors: Colors, spacing: Spacing, radius: Radius, typography: Typography, shadow: Shadow = .default) {
             self.colors = colors
             self.spacing = spacing
             self.radius = radius
             self.typography = typography
+            self.shadow = shadow
         }
 
         public static let `default` = Theme(
             colors: .default,
             spacing: .default,
             radius: .default,
-            typography: .default
+            typography: .default,
+            shadow: .default
         )
     }
 }

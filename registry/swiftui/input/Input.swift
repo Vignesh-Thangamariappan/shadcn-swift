@@ -14,6 +14,8 @@ import SwiftUI
 public extension UI {
     struct Input: View {
         @Environment(\.uiTheme) private var theme
+        @Environment(\.isEnabled) private var isEnabled
+        @Environment(\.colorScheme) private var colorScheme
         @FocusState private var isFocused: Bool
 
         private let placeholder: String
@@ -45,19 +47,28 @@ public extension UI {
             .font(theme.typography.body)
             .foregroundStyle(theme.colors.foreground)
             .padding(.horizontal, theme.spacing.md)
-            .padding(.vertical, theme.spacing.sm)
-            .background(theme.colors.background)
+            .frame(height: 36) // real shadcn's `h-9`
+            .background(fieldBackground)
             .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
             .overlay(
                 RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
                     .strokeBorder(borderColor, lineWidth: isFocused ? 2 : 1)
             )
+            .uiShadow(theme.shadow.xs)
+            .opacity(isEnabled ? 1 : 0.5)
             .animation(.easeOut(duration: 0.15), value: isFocused)
         }
 
         private var borderColor: Color {
             if isInvalid { return theme.colors.destructive }
             return isFocused ? theme.colors.ring : theme.colors.input
+        }
+
+        // Real shadcn is `bg-transparent` in light mode, `dark:bg-input/30`
+        // in dark — not a flat `background` fill in both, which would hide
+        // the field against most surfaces it sits on.
+        private var fieldBackground: Color {
+            colorScheme == .dark ? theme.colors.input.opacity(0.3) : .clear
         }
     }
 }

@@ -8,8 +8,18 @@ import SwiftUI
 /// (Binding<Option>) and multiple-selection (Binding<Set<Option>>) both
 /// funnel through the same Set-backed body — the single-selection
 /// initializer just adapts a scalar binding into a one-element Set.
+///
+/// Real shadcn's DEFAULT mode (`spacing={0}`) renders a joined segmented
+/// control: zero gap, only the first/last items keep rounded corners,
+/// the rest go `rounded-none` (verified live against `toggle-group.tsx`).
+/// This always renders the OTHER mode instead — a gapped row of fully-
+/// rounded, independent `UI.Toggle`s (real shadcn's `spacing > 0` look).
+/// A real gap, not fixed here: reproducing the joined look needs per-item
+/// corner masking inside `UI.Toggle` itself (a different registry
+/// component/file), not something addressable from this file alone.
 public extension UI {
     struct ToggleGroup<Option: Hashable>: View {
+        @Environment(\.uiTheme) private var theme
         private let options: [Option]
         private let icon: (Option) -> String
         @Binding private var selection: Set<Option>
@@ -32,7 +42,7 @@ public extension UI {
         }
 
         public var body: some View {
-            HStack(spacing: 4) {
+            HStack(spacing: theme.spacing.xs) {
                 ForEach(options, id: \.self) { option in
                     UI.Toggle(
                         systemImage: icon(option),

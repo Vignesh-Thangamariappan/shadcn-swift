@@ -24,7 +24,10 @@ public extension UI {
         }
 
         public var body: some View {
-            HStack(spacing: theme.spacing.xs) {
+            // real shadcn's BreadcrumbList is `gap-1.5` (6px) — doesn't sit
+            // on an existing spacing tier (xs=4, sm=8), hardcoded rather than
+            // rounding either way.
+            HStack(spacing: 6) {
                 ForEach(Array(items.enumerated()), id: \.element.id) { index, item in
                     if let action = item.action {
                         SwiftUI.Button(action: action) {
@@ -38,13 +41,18 @@ public extension UI {
                     }
 
                     if index < items.count - 1 {
+                        // real shadcn's separator icon is `size-3.5` (14px)
+                        // — was 10.
                         Image(systemName: "chevron.right")
-                            .font(.system(size: 10))
+                            .font(.system(size: 14))
                             .foregroundStyle(theme.colors.mutedForeground)
                     }
                 }
             }
-            .font(theme.typography.label)
+            // real shadcn's BreadcrumbList/Page/Link are all `text-sm` with
+            // no font-medium anywhere (only color distinguishes the current
+            // page) — was `.label` (medium weight), should be `.body`.
+            .font(theme.typography.body)
         }
     }
 }

@@ -21,6 +21,12 @@ import SwiftUI
 /// Scope: single-date selection only (`Binding<Date?>`). shadcn's Calendar
 /// (via react-day-picker) also supports multiple/range selection modes;
 /// those aren't built here — this is the common case, not full parity.
+///
+/// Day cells use `theme.radius.md`, not `Circle()`: real shadcn's
+/// `CalendarDayButton` is literally `<Button variant="ghost" size="icon">`
+/// (verified against the live `calendar.tsx`/`button.tsx` source), i.e. a
+/// rounded SQUARE selection highlight, same radius as every other icon
+/// button — not a circular one. An earlier version used `Circle()` here.
 public extension UI {
     struct Calendar: View {
         @Environment(\.uiTheme) private var theme
@@ -44,18 +50,18 @@ public extension UI {
                 dayGrid
             }
             .padding(theme.spacing.md)
-            .background(theme.colors.card)
-            .clipShape(RoundedRectangle(cornerRadius: theme.radius.lg, style: .continuous))
+            // real shadcn's Calendar root is `bg-background`, not a card
+            // surface — was `theme.colors.card` before.
+            .background(theme.colors.background)
+            .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
         }
 
         private var header: some View {
             HStack {
-                SwiftUI.Button {
-                    changeMonth(by: -1)
-                } label: {
-                    Image(systemName: "chevron.left")
-                }
-                .buttonStyle(.plain)
+                // real shadcn's nav buttons are `size-(--cell-size)` where
+                // `--cell-size: --spacing(8)` = 32px, ghost variant (no
+                // fill/border) — was an unsized plain-style image before.
+                navButton(systemImage: "chevron.left") { changeMonth(by: -1) }
 
                 Spacer()
 
@@ -64,21 +70,29 @@ public extension UI {
 
                 Spacer()
 
-                SwiftUI.Button {
-                    changeMonth(by: 1)
-                } label: {
-                    Image(systemName: "chevron.right")
-                }
-                .buttonStyle(.plain)
+                navButton(systemImage: "chevron.right") { changeMonth(by: 1) }
             }
-            .foregroundStyle(theme.colors.cardForeground)
+            .foregroundStyle(theme.colors.foreground)
+        }
+
+        private func navButton(systemImage: String, action: @escaping () -> Void) -> some View {
+            SwiftUI.Button(action: action) {
+                Image(systemName: systemImage)
+                    .frame(width: 32, height: 32)
+            }
+            .buttonStyle(.plain)
         }
 
         private var weekdayHeader: some View {
             HStack(spacing: 0) {
                 ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { _, symbol in
                     Text(symbol)
-                        .font(.caption2)
+                        // real shadcn's weekday cell is `text-[0.8rem]
+                        // font-normal` (~12px, regular) — `.caption` is
+                        // `.medium` by default, overridden to `.regular`
+                        // here rather than adding a new typography tier.
+                        .font(theme.typography.caption)
+                        .fontWeight(.regular)
                         .foregroundStyle(theme.colors.mutedForeground)
                         .frame(maxWidth: .infinity)
                 }
@@ -111,22 +125,29 @@ public extension UI {
                 Text("\(cal.component(.day, from: date))")
                     .font(theme.typography.body)
                     .frame(width: 32, height: 32)
-                    .background(isSelected ? theme.colors.primary : .clear)
-                    .foregroundStyle(dayForeground(isSelected: isSelected, isDisabled: isDisabled))
-                    .overlay(
-                        Circle()
-                            .strokeBorder(isToday && !isSelected ? theme.colors.primary : .clear, lineWidth: 1)
-                    )
-                    .clipShape(Circle())
+                    .background(dayBackground(isSelected: isSelected, isToday: isToday))
+                    .foregroundStyle(dayForeground(isSelected: isSelected, isToday: isToday, isDisabled: isDisabled))
+                    .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
             }
             .buttonStyle(.plain)
             .disabled(isDisabled)
         }
 
-        private func dayForeground(isSelected: Bool, isDisabled: Bool) -> Color {
+        // real shadcn's `today` cell is `bg-accent text-accent-foreground`
+        // (a filled highlight), not a stroked ring — was previously a
+        // `theme.colors.primary` outline here.
+        private func dayBackground(isSelected: Bool, isToday: Bool) -> Color {
+            if isSelected { return theme.colors.primary }
+            if isToday { return theme.colors.accent }
+            return .clear
+        }
+
+        private func dayForeground(isSelected: Bool, isToday: Bool, isDisabled: Bool) -> Color {
             if isSelected { return theme.colors.primaryForeground }
-            if isDisabled { return theme.colors.mutedForeground.opacity(0.4) }
-            return theme.colors.cardForeground
+            // real shadcn: `disabled` is `opacity-50`, was 0.4.
+            if isDisabled { return theme.colors.mutedForeground.opacity(0.5) }
+            if isToday { return theme.colors.accentForeground }
+            return theme.colors.foreground
         }
 
         private func changeMonth(by value: Int) {

@@ -25,7 +25,9 @@ public extension UI {
 
         public var body: some View {
             Text(text)
-                .font(theme.typography.label)
+                // real shadcn: `text-xs font-medium` (12/medium) — `caption`,
+                // not `label` (14/medium), which was the wrong tier.
+                .font(theme.typography.caption)
                 .padding(.horizontal, theme.spacing.sm)
                 .padding(.vertical, theme.spacing.xs / 2)
                 .background(background)
