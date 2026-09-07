@@ -182,15 +182,24 @@ public extension UI {
 
         private let isCard: Bool
         private let isSelected: Bool
+        private let onTap: (() -> Void)?
         private let content: () -> Content
 
+        /// `onTap`: real shadcn's card mode is a native `<label>` wrapping
+        /// the control, which browsers activate on click for free. SwiftUI
+        /// has no such implicit forwarding, so without this the card LOOKS
+        /// tappable but only its tiny embedded checkbox/radio actually
+        /// responds — a real hit-testing gap, not a cosmetic one. Pass the
+        /// same toggle you'd wire to the control's own binding.
         public init(
             isCard: Bool = false,
             isSelected: Bool = false,
+            onTap: (() -> Void)? = nil,
             @ViewBuilder content: @escaping () -> Content
         ) {
             self.isCard = isCard
             self.isSelected = isSelected
+            self.onTap = onTap
             self.content = content
         }
 
@@ -208,6 +217,8 @@ public extension UI {
                         .strokeBorder(isSelected ? theme.colors.primary : theme.colors.border, lineWidth: 1)
                 )
                 .opacity(isEnabled ? 1 : 0.5)
+                .contentShape(Rectangle())
+                .onTapGesture { if isEnabled { onTap?() } }
             } else {
                 HStack(alignment: .center, spacing: theme.spacing.sm) {
                     content()
@@ -342,7 +353,7 @@ private struct FieldPreview: View {
                 UI.FieldSet {
                     UI.FieldLegend("Plan", style: .label)
 
-                    UI.FieldLabel(isCard: true, isSelected: isPro) {
+                    UI.FieldLabel(isCard: true, isSelected: isPro, onTap: { isPro.toggle() }) {
                         UI.Checkbox(isOn: $isPro)
                         UI.FieldContent {
                             UI.FieldTitle("Pro")

@@ -65,7 +65,11 @@ public extension UI {
                     .strokeBorder(borderColor, lineWidth: isFocused ? 2 : 1)
             )
             .uiShadow(theme.shadow.xs)
-            .animation(.easeOut(duration: 0.15), value: isFocused)
+            // real shadcn's focus transition is `transition-[color,box-shadow]` —
+            // Tailwind's default duration/curve (150ms, ease-in-out), verified
+            // against `tailwindlabs/tailwindcss`'s own theme.css. Duration was
+            // already right; curve was `.easeOut`, not `.easeInOut`.
+            .animation(.easeInOut(duration: 0.15), value: isFocused)
         }
 
         private var borderColor: Color {

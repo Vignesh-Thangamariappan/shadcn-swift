@@ -52,6 +52,10 @@ public extension UI {
                         }
                     }
                     .buttonStyle(.plain)
+                    // Real shadcn's radio item is `transition-[color,box-shadow]`
+                    // (Tailwind's default 150ms) — the circle's border/fill
+                    // color change on selection was previously instant.
+                    .animation(.easeInOut(duration: 0.15), value: selection)
                 }
             }
             .opacity(isEnabled ? 1 : 0.5)

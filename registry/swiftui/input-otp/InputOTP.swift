@@ -16,6 +16,10 @@ public extension UI {
         @Environment(\.uiTheme) private var theme
         @Environment(\.isEnabled) private var isEnabled
         @FocusState private var isFocused: Bool
+        // Drives the active slot's blinking caret. Real shadcn's active,
+        // empty OTP slot shows `animate-caret-blink` — a 1000ms opacity
+        // cycle — not a static highlighted border alone.
+        @State private var caretVisible = true
 
         @Binding private var code: String
         private let length: Int
@@ -47,6 +51,11 @@ public extension UI {
             }
             .fixedSize(horizontal: false, vertical: true)
             .opacity(isEnabled ? 1 : 0.5)
+            .onAppear {
+                withAnimation(.easeInOut(duration: 0.5).repeatForever(autoreverses: true)) {
+                    caretVisible.toggle()
+                }
+            }
         }
 
         // Real shadcn's slot is `h-9 w-9` (36×36, square) with `text-sm`
@@ -62,11 +71,18 @@ public extension UI {
                 .strokeBorder(isActive ? theme.colors.ring : theme.colors.input, lineWidth: isActive ? 2 : 1)
                 .background(theme.colors.background)
                 .frame(width: 36, height: 36)
-                .overlay(
-                    Text(index < characters.count ? String(characters[index]) : "")
-                        .font(theme.typography.body)
-                        .foregroundStyle(theme.colors.foreground)
-                )
+                .overlay {
+                    if index < characters.count {
+                        Text(String(characters[index]))
+                            .font(theme.typography.body)
+                            .foregroundStyle(theme.colors.foreground)
+                    } else if isActive {
+                        Rectangle()
+                            .fill(theme.colors.foreground)
+                            .frame(width: 1, height: 20)
+                            .opacity(caretVisible ? 1 : 0)
+                    }
+                }
                 .uiShadow(theme.shadow.xs)
         }
     }

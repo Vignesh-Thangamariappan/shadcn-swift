@@ -90,6 +90,10 @@ public extension UI {
             }
             .buttonStyle(.plain)
             .opacity(isEnabled ? 1 : 0.5)
+            // Real shadcn's toggle is `transition-[color,box-shadow]`
+            // (Tailwind's default 150ms) — the pressed-state background
+            // change was previously instant.
+            .animation(.easeInOut(duration: 0.15), value: isOn)
         }
 
         // Real shadcn only applies `shadow-xs` to the `outline` variant.

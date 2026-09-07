@@ -69,11 +69,14 @@ public extension UI {
                         SwiftUI.Button {
                             isPresented.wrappedValue = false
                         } label: {
+                            // real shadcn's close icon is `size-4` (16pt),
+                            // inset `top-4 right-4` (theme.spacing.lg, 16pt)
+                            // — this used to be 13pt/spacing.md (12pt).
                             Image(systemName: "xmark")
-                                .font(.system(size: 13, weight: .medium))
+                                .font(.system(size: 16, weight: .medium))
                                 .foregroundStyle(theme.colors.mutedForeground)
                         }
-                        .padding(theme.spacing.md)
+                        .padding(theme.spacing.lg)
                     }
                     .padding(theme.spacing.xl)
             }

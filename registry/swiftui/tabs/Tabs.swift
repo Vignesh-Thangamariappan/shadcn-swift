@@ -69,6 +69,13 @@ public extension UI {
                 .padding(3)
                 .background(theme.colors.muted)
                 .clipShape(RoundedRectangle(cornerRadius: theme.radius.lg, style: .continuous))
+                // Real shadcn's trigger has `transition-all` — Tailwind's
+                // default is 150ms `cubic-bezier(0.4,0,0.2,1)` (verified
+                // against `tailwindlabs/tailwindcss`'s own theme.css), which
+                // `.timingCurve` reproduces exactly rather than approximating
+                // with a named curve. Without this, the active pill's
+                // background/shadow snapped instantly on tab change.
+                .animation(.timingCurve(0.4, 0, 0.2, 1, duration: 0.15), value: selection)
 
                 content(selection)
             }

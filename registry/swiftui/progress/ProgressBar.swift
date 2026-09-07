@@ -31,7 +31,11 @@ public extension UI {
                 }
             }
             .frame(height: 8)
-            .animation(.easeOut(duration: 0.2), value: value)
+            // real shadcn's fill indicator is a bare `transition-all` — Tailwind's
+            // actual default (150ms, cubic-bezier(0.4,0,0.2,1)/ease-in-out,
+            // verified against `tailwindlabs/tailwindcss`'s own theme.css), not
+            // a progress-specific easing. Was 200ms/easeOut.
+            .animation(.easeInOut(duration: 0.15), value: value)
         }
     }
 }
