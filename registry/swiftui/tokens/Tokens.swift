@@ -21,7 +21,7 @@ private extension Color {
 }
 
 public extension UI.Theme {
-    struct Colors {
+    struct Colors: Sendable {
         public var primary: Color
         public var primaryForeground: Color
         public var secondary: Color
@@ -155,7 +155,7 @@ public extension UI.Theme {
         )
     }
 
-    struct Spacing {
+    struct Spacing: Sendable {
         public var xs: CGFloat
         public var sm: CGFloat
         public var md: CGFloat
@@ -173,7 +173,7 @@ public extension UI.Theme {
         public static let `default` = Spacing(xs: 4, sm: 8, md: 12, lg: 16, xl: 24)
     }
 
-    struct Radius {
+    struct Radius: Sendable {
         public var sm: CGFloat
         public var md: CGFloat
         public var lg: CGFloat
@@ -194,6 +194,30 @@ public extension UI.Theme {
         public static let `default` = Radius(sm: 6, md: 8, lg: 10, xl: 14)
     }
 
+    /// A component's own corner treatment: one of `Radius`'s tiers, or a
+    /// full pill (real shadcn's `rounded-full` override, e.g.
+    /// `<Button className="rounded-full">`). That override doesn't
+    /// translate here: SwiftUI clip shapes intersect rather than replace,
+    /// so stacking a second `.clipShape(Capsule())` on a view already
+    /// clipped to a smaller `RoundedRectangle` has no visible effect — the
+    /// tighter shape already cut the corners. `.full` has to be a real
+    /// parameter each affected component's own initializer accepts and
+    /// applies at its own clip/overlay call sites instead. It renders as a
+    /// `RoundedRectangle` whose radius exceeds half the view's shortest
+    /// side, which SwiftUI clamps to the same shape a `Capsule()` would
+    /// draw — no second shape type or `AnyShape` needed.
+    enum CornerStyle: Sendable {
+        case radius(CGFloat)
+        case full
+
+        var cornerRadius: CGFloat {
+            switch self {
+            case .radius(let value): return value
+            case .full: return .greatestFiniteMagnitude
+            }
+        }
+    }
+
     /// Sizes/weights trace to real shadcn's actual Tailwind classes, fetched
     /// live from `label.tsx` (`text-sm font-medium`), `badge.tsx` (`text-xs
     /// font-medium`), `card.tsx` (`CardTitle`: no size class = the browser
@@ -212,7 +236,7 @@ public extension UI.Theme {
     /// separate tier, matching how real shadcn also just repeats the same
     /// `text-lg` class at a different weight rather than sharing a "heading"
     /// utility.
-    struct Typography {
+    struct Typography: Sendable {
         public var caption: Font
         public var body: Font
         public var label: Font
@@ -255,8 +279,8 @@ public extension UI.Theme {
     /// shadcn's `select-content`/`dropdown-menu-content` also use `md`, but
     /// those render as native OS menu/picker chrome here, not a shadow this
     /// token controls), `lg` (dialog).
-    struct Shadow {
-        public struct Layer {
+    struct Shadow: Sendable {
+        public struct Layer: Sendable {
             public var color: Color
             public var radius: CGFloat
             public var x: CGFloat
@@ -270,7 +294,7 @@ public extension UI.Theme {
             }
         }
 
-        public struct Level {
+        public struct Level: Sendable {
             public var layers: [Layer]
 
             /// Single-layer convenience — also how call sites express "no

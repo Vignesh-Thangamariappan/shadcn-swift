@@ -23,6 +23,11 @@ import SwiftUI
 /// other size (`.sm` is the one size that overrides the base gap), and
 /// horizontal padding tightens when an icon is present (`has-[>svg]:px-*`)
 /// — 12pt/10pt/16pt for default/sm/lg instead of 16pt/12pt/24pt.
+///
+/// `shape: .full` reproduces real shadcn's `rounded-full` override
+/// (`UI.Theme.CornerStyle`, defined in `tokens/Tokens.swift`) — a real
+/// parameter, not an external `.clipShape(Capsule())` layered on afterward,
+/// since SwiftUI's clip shapes intersect rather than replace one another.
 public extension UI {
     enum ButtonVariant {
         case `default`, destructive, outline, secondary, ghost, link
@@ -42,15 +47,18 @@ public extension UI {
         private let action: () -> Void
         private let label: () -> Label
         private let hasIcon: Bool
+        private let shape: UI.Theme.CornerStyle?
 
         public init(
             variant: ButtonVariant = .default,
             size: ButtonSize = .default,
+            shape: UI.Theme.CornerStyle? = nil,
             action: @escaping () -> Void,
             @ViewBuilder label: @escaping () -> Label
         ) {
             self.variant = variant
             self.size = size
+            self.shape = shape
             self.action = action
             self.label = label
             self.hasIcon = false
@@ -62,12 +70,14 @@ public extension UI {
         fileprivate init(
             variant: ButtonVariant,
             size: ButtonSize,
+            shape: UI.Theme.CornerStyle?,
             hasIcon: Bool,
             action: @escaping () -> Void,
             @ViewBuilder label: @escaping () -> Label
         ) {
             self.variant = variant
             self.size = size
+            self.shape = shape
             self.action = action
             self.label = label
             self.hasIcon = hasIcon
@@ -83,9 +93,9 @@ public extension UI {
                     .frame(width: size == .icon ? height : nil)
                     .background(background)
                     .foregroundStyle(foreground)
-                    .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
                     .overlay(
-                        RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
+                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                             .strokeBorder(border, lineWidth: variant == .outline ? 1 : 0)
                     )
                     .underline(variant == .link)
@@ -100,6 +110,17 @@ public extension UI {
 
         private var font: Font {
             size == .lg ? theme.typography.body : theme.typography.label
+        }
+
+        // Real shadcn's `rounded-full` is a `className` override that
+        // replaces the base `rounded-md` class outright — Tailwind's class
+        // merge is a replace, not a stack. SwiftUI's `.clipShape` stacks
+        // (intersects) instead, so a `Capsule()` clipped on top of an
+        // already-`RoundedRectangle`-clipped view has no visible effect;
+        // `shape` has to be a real parameter this button applies at its own
+        // clip/overlay sites. `nil` keeps this button's own default tier.
+        private var cornerRadius: CGFloat {
+            (shape ?? .radius(theme.radius.md)).cornerRadius
         }
 
         private var horizontalPadding: CGFloat {
@@ -159,9 +180,10 @@ public extension UI.Button where Label == Text {
         _ titleKey: LocalizedStringKey,
         variant: UI.ButtonVariant = .default,
         size: UI.ButtonSize = .default,
+        shape: UI.Theme.CornerStyle? = nil,
         action: @escaping () -> Void
     ) {
-        self.init(variant: variant, size: size, action: action) { Text(titleKey) }
+        self.init(variant: variant, size: size, shape: shape, action: action) { Text(titleKey) }
     }
 }
 
@@ -182,6 +204,11 @@ public extension UI {
         let trailing: Bool
 
         public var body: some View {
+            // `Image` has no dedicated `font(_:) -> Image` overload of its
+            // own (verified: forcing that return type is a real compile
+            // error, not a resolvable ambiguity) — `View.font(_:) -> some
+            // View` is the only candidate, and it's the correct, standard
+            // way to size an SF Symbol image; it isn't a workaround.
             HStack(spacing: gap) {
                 if trailing { title }
                 icon.font(.system(size: 16))
@@ -198,9 +225,10 @@ public extension UI.Button where Label == UI.ButtonIconLabel {
         icon: Image,
         variant: UI.ButtonVariant = .default,
         size: UI.ButtonSize = .default,
+        shape: UI.Theme.CornerStyle? = nil,
         action: @escaping () -> Void
     ) {
-        self.init(variant: variant, size: size, hasIcon: true, action: action) {
+        self.init(variant: variant, size: size, shape: shape, hasIcon: true, action: action) {
             UI.ButtonIconLabel(icon: icon, title: Text(titleKey), gap: iconGap(for: size), trailing: false)
         }
     }
@@ -211,9 +239,10 @@ public extension UI.Button where Label == UI.ButtonIconLabel {
         trailingIcon icon: Image,
         variant: UI.ButtonVariant = .default,
         size: UI.ButtonSize = .default,
+        shape: UI.Theme.CornerStyle? = nil,
         action: @escaping () -> Void
     ) {
-        self.init(variant: variant, size: size, hasIcon: true, action: action) {
+        self.init(variant: variant, size: size, shape: shape, hasIcon: true, action: action) {
             UI.ButtonIconLabel(icon: icon, title: Text(titleKey), gap: iconGap(for: size), trailing: true)
         }
     }
@@ -227,9 +256,10 @@ public extension UI.Button where Label == UI.ButtonIconLabel {
         icon: Image,
         variant: UI.ButtonVariant = .default,
         size: UI.ButtonSize = .icon,
+        shape: UI.Theme.CornerStyle? = nil,
         action: @escaping () -> Void
     ) {
-        self.init(variant: variant, size: size, action: action) {
+        self.init(variant: variant, size: size, shape: shape, hasIcon: true, action: action) {
             UI.ButtonIconLabel(icon: icon, title: nil, gap: 0, trailing: false)
         }
     }
@@ -264,6 +294,11 @@ private struct ButtonPreview: View {
 
             UI.Button("Disabled") {}
                 .disabled(true)
+
+            HStack(spacing: 12) {
+                UI.Button("Rounded full", shape: .full, action: {})
+                UI.Button(icon: Image(systemName: "plus"), shape: .full, action: {})
+            }
         }
         .padding()
     }

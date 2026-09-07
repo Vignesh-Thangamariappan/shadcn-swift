@@ -26,6 +26,7 @@ public extension UI {
         private let placeholder: String
         @Binding private var text: String
         private let isInvalid: Bool
+        private let shape: UI.Theme.CornerStyle?
         private let leading: () -> Leading
         private let trailing: () -> Trailing
 
@@ -33,14 +34,23 @@ public extension UI {
             _ placeholder: String,
             text: Binding<String>,
             isInvalid: Bool = false,
+            shape: UI.Theme.CornerStyle? = nil,
             @ViewBuilder leading: @escaping () -> Leading,
             @ViewBuilder trailing: @escaping () -> Trailing
         ) {
             self.placeholder = placeholder
             self._text = text
             self.isInvalid = isInvalid
+            self.shape = shape
             self.leading = leading
             self.trailing = trailing
+        }
+
+        // `shape: .full` mirrors real shadcn's `className="rounded-full"`
+        // override — see `Button.swift`'s header for why this needs to be a
+        // real parameter rather than a second `.clipShape` from outside.
+        private var cornerRadius: CGFloat {
+            (shape ?? .radius(theme.radius.md)).cornerRadius
         }
 
         public var body: some View {
@@ -59,9 +69,9 @@ public extension UI {
             .padding(.horizontal, theme.spacing.md)
             .padding(.vertical, theme.spacing.sm)
             .background(theme.colors.background)
-            .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(borderColor, lineWidth: isFocused ? 2 : 1)
             )
             .uiShadow(theme.shadow.xs)
@@ -84,9 +94,10 @@ public extension UI.InputGroup where Trailing == EmptyView {
         _ placeholder: String,
         text: Binding<String>,
         isInvalid: Bool = false,
+        shape: UI.Theme.CornerStyle? = nil,
         @ViewBuilder leading: @escaping () -> Leading
     ) {
-        self.init(placeholder, text: text, isInvalid: isInvalid, leading: leading, trailing: { EmptyView() })
+        self.init(placeholder, text: text, isInvalid: isInvalid, shape: shape, leading: leading, trailing: { EmptyView() })
     }
 }
 
@@ -95,9 +106,10 @@ public extension UI.InputGroup where Leading == EmptyView {
         _ placeholder: String,
         text: Binding<String>,
         isInvalid: Bool = false,
+        shape: UI.Theme.CornerStyle? = nil,
         @ViewBuilder trailing: @escaping () -> Trailing
     ) {
-        self.init(placeholder, text: text, isInvalid: isInvalid, leading: { EmptyView() }, trailing: trailing)
+        self.init(placeholder, text: text, isInvalid: isInvalid, shape: shape, leading: { EmptyView() }, trailing: trailing)
     }
 }
 

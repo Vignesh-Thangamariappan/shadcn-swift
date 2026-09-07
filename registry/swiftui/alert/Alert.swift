@@ -38,11 +38,25 @@ public extension UI {
         private let title: String
         private let message: String?
         private let variant: AlertVariant
+        private let shape: UI.Theme.CornerStyle?
 
-        public init(_ title: String, message: String? = nil, variant: AlertVariant = .default) {
+        public init(
+            _ title: String,
+            message: String? = nil,
+            variant: AlertVariant = .default,
+            shape: UI.Theme.CornerStyle? = nil
+        ) {
             self.title = title
             self.message = message
             self.variant = variant
+            self.shape = shape
+        }
+
+        // `shape: .full` mirrors real shadcn's `className="rounded-full"`
+        // override — see `Button.swift`'s header for why this needs to be a
+        // real parameter rather than a second `.clipShape` from outside.
+        private var cornerRadius: CGFloat {
+            (shape ?? .radius(theme.radius.lg)).cornerRadius
         }
 
         public var body: some View {
@@ -63,9 +77,9 @@ public extension UI {
             }
             .padding(theme.spacing.md)
             .background(theme.colors.card)
-            .clipShape(RoundedRectangle(cornerRadius: theme.radius.lg, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: theme.radius.lg, style: .continuous)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(theme.colors.border, lineWidth: 1)
             )
         }

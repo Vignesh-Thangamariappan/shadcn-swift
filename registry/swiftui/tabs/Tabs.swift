@@ -62,6 +62,14 @@ public extension UI {
                                 )
                                 .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
                                 .uiShadow(item.tag == selection ? theme.shadow.sm : .init(color: .clear, radius: 0, y: 0))
+                                // Defensive: `.frame(maxWidth: .infinity)` above
+                                // should already make the whole cell tappable,
+                                // not just the visible label, but a real
+                                // consuming app hit this not being reliable in
+                                // practice — matching the clip shape exactly
+                                // (not a plain full-bleed Rectangle) keeps the
+                                // tap area equal to the visual bounds, no more.
+                                .contentShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
                         }
                         .buttonStyle(.plain)
                     }

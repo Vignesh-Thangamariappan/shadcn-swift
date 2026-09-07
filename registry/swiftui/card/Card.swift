@@ -11,7 +11,10 @@ import SwiftUI
 /// the one component that isn't `rounded-lg`/`rounded-md`. An earlier
 /// version used `lg` here, which was also the wrong number for `lg` itself
 /// (12 instead of 10) — both fixed in a parity pass against real shadcn's
-/// computed `--radius-*` scale.
+/// computed `--radius-*` scale. `shape: .full` overrides this the same way
+/// real shadcn's `className="rounded-full"` would (see `Button.swift`'s
+/// header for why this has to be a real parameter, not a second
+/// `.clipShape` layered on from outside).
 public extension UI {
     struct Card<Content: View>: View {
         @Environment(\.uiTheme) private var theme
@@ -19,18 +22,25 @@ public extension UI {
         private let title: String?
         private let actionTitle: String?
         private let action: (() -> Void)?
+        private let shape: UI.Theme.CornerStyle?
         private let content: () -> Content
 
         public init(
             title: String? = nil,
             actionTitle: String? = nil,
             action: (() -> Void)? = nil,
+            shape: UI.Theme.CornerStyle? = nil,
             @ViewBuilder content: @escaping () -> Content
         ) {
             self.title = title
             self.actionTitle = actionTitle
             self.action = action
+            self.shape = shape
             self.content = content
+        }
+
+        private var cornerRadius: CGFloat {
+            (shape ?? .radius(theme.radius.xl)).cornerRadius
         }
 
         public var body: some View {
@@ -62,9 +72,9 @@ public extension UI {
             }
             .padding(theme.spacing.xl)
             .background(theme.colors.card)
-            .clipShape(RoundedRectangle(cornerRadius: theme.radius.xl, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: theme.radius.xl, style: .continuous)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(theme.colors.border, lineWidth: 1)
             )
             .uiShadow(theme.shadow.sm)
@@ -81,6 +91,9 @@ private struct CardPreview: View {
             }
             UI.Card {
                 Text("A card with no title or action — just content.")
+            }
+            UI.Card(shape: .full) {
+                Text("Rounded full")
             }
         }
         .padding()

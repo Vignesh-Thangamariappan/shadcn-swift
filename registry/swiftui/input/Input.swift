@@ -22,17 +22,27 @@ public extension UI {
         @Binding private var text: String
         private let isSecure: Bool
         private let isInvalid: Bool
+        private let shape: UI.Theme.CornerStyle?
 
         public init(
             _ placeholder: String,
             text: Binding<String>,
             isSecure: Bool = false,
-            isInvalid: Bool = false
+            isInvalid: Bool = false,
+            shape: UI.Theme.CornerStyle? = nil
         ) {
             self.placeholder = placeholder
             self._text = text
             self.isSecure = isSecure
             self.isInvalid = isInvalid
+            self.shape = shape
+        }
+
+        // `shape: .full` mirrors real shadcn's `className="rounded-full"`
+        // override — see `Button.swift`'s header for why this needs to be a
+        // real parameter rather than a second `.clipShape` from outside.
+        private var cornerRadius: CGFloat {
+            (shape ?? .radius(theme.radius.md)).cornerRadius
         }
 
         public var body: some View {
@@ -49,14 +59,18 @@ public extension UI {
             .padding(.horizontal, theme.spacing.md)
             .frame(height: 36) // real shadcn's `h-9`
             .background(fieldBackground)
-            .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+            .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
             .overlay(
-                RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
                     .strokeBorder(borderColor, lineWidth: isFocused ? 2 : 1)
             )
             .uiShadow(theme.shadow.xs)
             .opacity(isEnabled ? 1 : 0.5)
-            .animation(.easeOut(duration: 0.15), value: isFocused)
+            // Real shadcn's focus transition is `transition-[color,box-shadow]`
+            // — Tailwind's default curve is ease-in-out, not ease-out (verified
+            // against `tailwindlabs/tailwindcss`'s own theme.css, same fix
+            // already applied to InputGroup.swift for the identical mismatch).
+            .animation(.easeInOut(duration: 0.15), value: isFocused)
         }
 
         private var borderColor: Color {
