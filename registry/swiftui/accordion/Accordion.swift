@@ -57,6 +57,16 @@ public extension UI {
                                     .foregroundStyle(theme.colors.mutedForeground)
                                     .rotationEffect(.degrees(expanded.contains(item.tag) ? 180 : 0))
                             }
+                            // Real shadcn's trigger is `flex flex-1 ... justify-between`
+                            // — it spans the full row width with the chevron pinned to
+                            // the trailing edge. Without an explicit width here the
+                            // HStack (and its Button) would just hug the title text,
+                            // leaving the rest of the row both visually wrong (chevron
+                            // sitting right after the title instead of at the edge) and
+                            // untappable. `.contentShape` makes the whole stretched row
+                            // — Spacer included — register the tap, not just the glyphs.
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .padding(.vertical, theme.spacing.lg)

@@ -41,6 +41,16 @@ public extension UI {
                         Image(systemName: "chevron.down")
                             .rotationEffect(.degrees(isExpanded ? 180 : 0))
                     }
+                    // Real shadcn's own CollapsibleTrigger is a bare, unstyled
+                    // Radix passthrough with no width opinion at all — this
+                    // trigger row's Spacer-pushed chevron is this port's own
+                    // invented convenience default (already documented above).
+                    // Given that Spacer is here, the row needs to actually
+                    // stretch and be tappable across its full width to work
+                    // as intended, rather than hugging the label and leaving
+                    // the trailing area both visually cramped and untappable.
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(theme.colors.foreground)
