@@ -13,6 +13,16 @@ import SwiftUI
 /// default. Real shadcn's Button is `inline-flex` — sized to its content,
 /// not full-width — and the earlier version's `frame(maxWidth: .infinity)`
 /// was a silent deviation from that.
+///
+/// Icon convenience inits (`icon:`/`trailingIcon:`) match real shadcn's
+/// icon-bearing button exactly, verified against the live `button.tsx`
+/// source: icon is sized `size-4` (16pt) for every size this port has
+/// (`sm`/`default`/`lg` — real shadcn's smaller `size-3`/12pt icon only
+/// applies to an `xs` button size this port doesn't have), the icon/label
+/// gap is `gap-1.5` (6pt) for `.sm` and the base `gap-2` (8pt) for every
+/// other size (`.sm` is the one size that overrides the base gap), and
+/// horizontal padding tightens when an icon is present (`has-[>svg]:px-*`)
+/// — 12pt/10pt/16pt for default/sm/lg instead of 16pt/12pt/24pt.
 public extension UI {
     enum ButtonVariant {
         case `default`, destructive, outline, secondary, ghost, link
@@ -31,6 +41,7 @@ public extension UI {
         private let size: ButtonSize
         private let action: () -> Void
         private let label: () -> Label
+        private let hasIcon: Bool
 
         public init(
             variant: ButtonVariant = .default,
@@ -42,6 +53,24 @@ public extension UI {
             self.size = size
             self.action = action
             self.label = label
+            self.hasIcon = false
+        }
+
+        /// Only the icon-convenience inits below use this — `hasIcon` gates
+        /// the `has-[>svg]:px-*` tightened padding real shadcn applies
+        /// whenever a button carries an icon child.
+        fileprivate init(
+            variant: ButtonVariant,
+            size: ButtonSize,
+            hasIcon: Bool,
+            action: @escaping () -> Void,
+            @ViewBuilder label: @escaping () -> Label
+        ) {
+            self.variant = variant
+            self.size = size
+            self.action = action
+            self.label = label
+            self.hasIcon = hasIcon
         }
 
         public var body: some View {
@@ -75,12 +104,13 @@ public extension UI {
 
         private var horizontalPadding: CGFloat {
             switch size {
-            case .sm: 12
-            case .default: 16
-            case .lg: 24
+            case .sm: hasIcon ? 10 : 12
+            case .default: hasIcon ? 12 : 16
+            case .lg: hasIcon ? 16 : 24
             case .icon: 0
             }
         }
+
 
         private var height: CGFloat {
             switch size {
@@ -135,6 +165,76 @@ public extension UI.Button where Label == Text {
     }
 }
 
+/// Icon/label gap — real shadcn's `.sm` size is the one that overrides the
+/// base `gap-2` (8pt) down to `gap-1.5` (6pt).
+private func iconGap(for size: UI.ButtonSize) -> CGFloat {
+    size == .sm ? 6 : 8
+}
+
+/// Real shadcn sizes any icon child to `size-4` (16pt) unless it already
+/// carries its own size class — verified against the live `button.tsx`
+/// source (`[&_svg:not([class*='size-'])]:size-4`).
+public extension UI {
+    struct ButtonIconLabel: View {
+        let icon: Image
+        let title: Text?
+        let gap: CGFloat
+        let trailing: Bool
+
+        public var body: some View {
+            HStack(spacing: gap) {
+                if trailing { title }
+                icon.font(.system(size: 16))
+                if !trailing { title }
+            }
+        }
+    }
+}
+
+public extension UI.Button where Label == UI.ButtonIconLabel {
+    /// A button with a leading icon before its title.
+    init(
+        _ titleKey: LocalizedStringKey,
+        icon: Image,
+        variant: UI.ButtonVariant = .default,
+        size: UI.ButtonSize = .default,
+        action: @escaping () -> Void
+    ) {
+        self.init(variant: variant, size: size, hasIcon: true, action: action) {
+            UI.ButtonIconLabel(icon: icon, title: Text(titleKey), gap: iconGap(for: size), trailing: false)
+        }
+    }
+
+    /// A button with a trailing icon after its title.
+    init(
+        _ titleKey: LocalizedStringKey,
+        trailingIcon icon: Image,
+        variant: UI.ButtonVariant = .default,
+        size: UI.ButtonSize = .default,
+        action: @escaping () -> Void
+    ) {
+        self.init(variant: variant, size: size, hasIcon: true, action: action) {
+            UI.ButtonIconLabel(icon: icon, title: Text(titleKey), gap: iconGap(for: size), trailing: true)
+        }
+    }
+}
+
+public extension UI.Button where Label == UI.ButtonIconLabel {
+    /// An icon-only button (no title) — sizes its icon to `size-4` (16pt)
+    /// the same way the title-bearing icon inits above do, so a caller
+    /// doesn't have to hand-size a bare `Image` themselves.
+    init(
+        icon: Image,
+        variant: UI.ButtonVariant = .default,
+        size: UI.ButtonSize = .icon,
+        action: @escaping () -> Void
+    ) {
+        self.init(variant: variant, size: size, action: action) {
+            UI.ButtonIconLabel(icon: icon, title: nil, gap: 0, trailing: false)
+        }
+    }
+}
+
 #if DEBUG
 private struct ButtonPreview: View {
     var body: some View {
@@ -153,6 +253,13 @@ private struct ButtonPreview: View {
                 UI.Button(size: .icon, action: {}) {
                     Image(systemName: "plus")
                 }
+                UI.Button(icon: Image(systemName: "plus"), action: {})
+            }
+
+            HStack(spacing: 12) {
+                UI.Button("Download", icon: Image(systemName: "arrow.down.circle"), action: {})
+                UI.Button("Next", trailingIcon: Image(systemName: "arrow.right"), variant: .outline, action: {})
+                UI.Button("Small", icon: Image(systemName: "star"), size: .sm, action: {})
             }
 
             UI.Button("Disabled") {}

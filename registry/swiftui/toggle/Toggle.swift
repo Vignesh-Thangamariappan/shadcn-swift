@@ -16,6 +16,18 @@ import SwiftUI
 /// Horizontal padding and the square minimum width trace to real shadcn's
 /// actual per-size classes (`h-9 min-w-9 px-2` etc., fetched live from
 /// `toggle.tsx`) — an earlier version's padding was roughly double these.
+///
+/// `groupPosition` exists so `UI.ToggleGroup` can reproduce real shadcn's
+/// joined-segment corner rounding (verified live against `toggle-group.tsx`:
+/// `rounded-none` on every item except `first:rounded-l-md`/
+/// `last:rounded-r-md`) without `ToggleGroup` needing to reach inside this
+/// file's own `clipShape`. One honest gap: real shadcn also collapses the
+/// shared border between adjacent `outline`-variant segments to a single
+/// 1px line (`border-l-0` on every item but the first); SwiftUI's
+/// `strokeBorder` has no equivalent border-collapsing model, so each
+/// segment still draws its own full border and the shared seam renders
+/// about 2x shadcn's width — a deliberate, documented simplification, not
+/// a silent one.
 public extension UI {
     enum ToggleVariant {
         case `default`, outline
@@ -25,12 +37,22 @@ public extension UI {
         case sm, `default`, lg
     }
 
+    /// Where a `Toggle` sits in a joined row — real shadcn's `ToggleGroup`
+    /// default (`spacing={0}`) look: only the first/last items keep rounded
+    /// corners, the rest go square, verified live against `toggle-group.tsx`.
+    /// Not meant to be set on a standalone `Toggle`; `UI.ToggleGroup` sets
+    /// this internally for each item it lays out.
+    enum ToggleGroupPosition {
+        case standalone, leading, middle, trailing
+    }
+
     struct Toggle<Label: View>: View {
         @Environment(\.uiTheme) private var theme
         @Environment(\.isEnabled) private var isEnabled
 
         private let variant: ToggleVariant
         private let size: ToggleSize
+        private let groupPosition: ToggleGroupPosition
         @Binding private var isOn: Bool
         private let label: () -> Label
 
@@ -38,11 +60,13 @@ public extension UI {
             isOn: Binding<Bool>,
             variant: ToggleVariant = .default,
             size: ToggleSize = .default,
+            groupPosition: ToggleGroupPosition = .standalone,
             @ViewBuilder label: @escaping () -> Label
         ) {
             self._isOn = isOn
             self.variant = variant
             self.size = size
+            self.groupPosition = groupPosition
             self.label = label
         }
 
@@ -57,9 +81,9 @@ public extension UI {
                     .frame(height: height)
                     .background(background)
                     .foregroundStyle(foreground)
-                    .clipShape(RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous))
+                    .clipShape(cornerShape)
                     .overlay(
-                        RoundedRectangle(cornerRadius: theme.radius.md, style: .continuous)
+                        cornerShape
                             .strokeBorder(variant == .outline ? theme.colors.input : .clear, lineWidth: 1)
                     )
                     .uiShadow(shadowLevel)
@@ -71,6 +95,39 @@ public extension UI {
         // Real shadcn only applies `shadow-xs` to the `outline` variant.
         private var shadowLevel: UI.Theme.Shadow.Level {
             variant == .outline ? theme.shadow.xs : UI.Theme.Shadow.Level(color: .clear, radius: 0, y: 0)
+        }
+
+        // Real shadcn's joined `ToggleGroup` row: `rounded-none` on every
+        // item except `first:rounded-l-md`/`last:rounded-r-md`. A
+        // standalone Toggle always rounds all four corners, unchanged.
+        private var cornerShape: UnevenRoundedRectangle {
+            let radius = theme.radius.md
+            switch groupPosition {
+            case .standalone:
+                return UnevenRoundedRectangle(
+                    topLeadingRadius: radius, bottomLeadingRadius: radius,
+                    bottomTrailingRadius: radius, topTrailingRadius: radius,
+                    style: .continuous
+                )
+            case .leading:
+                return UnevenRoundedRectangle(
+                    topLeadingRadius: radius, bottomLeadingRadius: radius,
+                    bottomTrailingRadius: 0, topTrailingRadius: 0,
+                    style: .continuous
+                )
+            case .middle:
+                return UnevenRoundedRectangle(
+                    topLeadingRadius: 0, bottomLeadingRadius: 0,
+                    bottomTrailingRadius: 0, topTrailingRadius: 0,
+                    style: .continuous
+                )
+            case .trailing:
+                return UnevenRoundedRectangle(
+                    topLeadingRadius: 0, bottomLeadingRadius: 0,
+                    bottomTrailingRadius: radius, topTrailingRadius: radius,
+                    style: .continuous
+                )
+            }
         }
 
         private var background: Color {
@@ -106,9 +163,10 @@ public extension UI.Toggle where Label == Image {
         systemImage: String,
         isOn: Binding<Bool>,
         variant: UI.ToggleVariant = .default,
-        size: UI.ToggleSize = .default
+        size: UI.ToggleSize = .default,
+        groupPosition: UI.ToggleGroupPosition = .standalone
     ) {
-        self.init(isOn: isOn, variant: variant, size: size) { Image(systemName: systemImage) }
+        self.init(isOn: isOn, variant: variant, size: size, groupPosition: groupPosition) { Image(systemName: systemImage) }
     }
 }
 
