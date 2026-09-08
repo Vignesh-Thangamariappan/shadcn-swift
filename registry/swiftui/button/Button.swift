@@ -48,6 +48,11 @@ public extension UI {
         private let label: () -> Label
         private let hasIcon: Bool
         private let shape: UI.Theme.CornerStyle?
+        // Not part of any public initializer — `UI.ButtonGroup` is the only
+        // intended setter, via `buttonGroupPosition(_:orientation:)` below.
+        // No direct caller should construct a "grouped standalone" Button.
+        private var groupPosition: UI.Theme.SegmentPosition = .standalone
+        private var groupOrientation: UI.Theme.SegmentOrientation = .horizontal
 
         public init(
             variant: ButtonVariant = .default,
@@ -93,11 +98,8 @@ public extension UI {
                     .frame(width: size == .icon ? height : nil)
                     .background(background)
                     .foregroundStyle(foreground)
-                    .clipShape(RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                            .strokeBorder(border, lineWidth: variant == .outline ? 1 : 0)
-                    )
+                    .clipShape(cornerShape)
+                    .overlay(alignment: .center) { borderOverlay }
                     .underline(variant == .link)
                     // Real shadcn's `outline` variant alone carries `shadow-xs`
                     // (verified against the live `button.tsx` source) — every
@@ -121,6 +123,50 @@ public extension UI {
         // clip/overlay sites. `nil` keeps this button's own default tier.
         private var cornerRadius: CGFloat {
             (shape ?? .radius(theme.radius.md)).cornerRadius
+        }
+
+        // Real shadcn's `ButtonGroup` rounds only the OUTER corners of the
+        // first/last member (`rounded-l-none`/`rounded-r-none`, mirrored for
+        // `vertical` with top/bottom) — verified live against
+        // `button-group.tsx`. `.standalone` (the default) rounds all four
+        // corners as before; `UI.ButtonGroup` is the only thing that ever
+        // sets `groupPosition` away from that.
+        private var cornerShape: UnevenRoundedRectangle {
+            let r = cornerRadius
+            switch (groupOrientation, groupPosition) {
+            case (_, .standalone):
+                return UnevenRoundedRectangle(topLeadingRadius: r, bottomLeadingRadius: r, bottomTrailingRadius: r, topTrailingRadius: r, style: .continuous)
+            case (_, .middle):
+                return UnevenRoundedRectangle(topLeadingRadius: 0, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: 0, style: .continuous)
+            case (.horizontal, .leading):
+                return UnevenRoundedRectangle(topLeadingRadius: r, bottomLeadingRadius: r, bottomTrailingRadius: 0, topTrailingRadius: 0, style: .continuous)
+            case (.horizontal, .trailing):
+                return UnevenRoundedRectangle(topLeadingRadius: 0, bottomLeadingRadius: 0, bottomTrailingRadius: r, topTrailingRadius: r, style: .continuous)
+            case (.vertical, .leading):
+                return UnevenRoundedRectangle(topLeadingRadius: r, bottomLeadingRadius: 0, bottomTrailingRadius: 0, topTrailingRadius: r, style: .continuous)
+            case (.vertical, .trailing):
+                return UnevenRoundedRectangle(topLeadingRadius: 0, bottomLeadingRadius: r, bottomTrailingRadius: r, topTrailingRadius: 0, style: .continuous)
+            }
+        }
+
+        // Real shadcn's ButtonGroup also collapses the shared border between
+        // adjacent members to one line (`border-l-0`/`border-t-0` on every
+        // member but the first) — same technique as `UI.Toggle`'s own
+        // grouped border, generalized to both orientations in
+        // `UI.Theme.PartialBorderShape` (`tokens/Tokens.swift`).
+        @ViewBuilder
+        private var borderOverlay: some View {
+            let width: CGFloat = variant == .outline ? 1 : 0
+            switch (groupOrientation, groupPosition) {
+            case (_, .standalone), (_, .leading):
+                cornerShape.strokeBorder(border, lineWidth: width)
+            case (let orientation, .middle):
+                UI.Theme.PartialBorderShape(orientation: orientation, farCornerRadius: 0)
+                    .stroke(border, lineWidth: width)
+            case (let orientation, .trailing):
+                UI.Theme.PartialBorderShape(orientation: orientation, farCornerRadius: cornerRadius)
+                    .stroke(border, lineWidth: width)
+            }
         }
 
         private var horizontalPadding: CGFloat {
@@ -171,6 +217,17 @@ public extension UI {
 
         private var border: Color {
             variant == .outline ? theme.colors.input : .clear
+        }
+
+        /// `UI.ButtonGroup`-only. Not public: no direct caller should
+        /// construct a "grouped standalone" Button — see the stored
+        /// properties' own doc comment above for why this isn't threaded
+        /// through the public initializers instead.
+        func buttonGroupPosition(_ position: UI.Theme.SegmentPosition, orientation: UI.Theme.SegmentOrientation) -> Self {
+            var copy = self
+            copy.groupPosition = position
+            copy.groupOrientation = orientation
+            return copy
         }
     }
 }

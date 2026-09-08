@@ -12,7 +12,11 @@ import UIKit
 /// those files. Kept private: a theme author only ever sees the finished
 /// `Color`, the same way a CSS custom property looks like one value at any
 /// given moment.
-private extension Color {
+/// Package/module-internal (not `private`) so other vendored files in the
+/// same compiled target — e.g. `toast/Toast.swift`, which needs its own
+/// verified light/dark pairs for typed toast colors — can reuse it instead
+/// of duplicating the same `UIColor { traits in ... }` pattern.
+extension Color {
     static func dynamic(light: Color, dark: Color) -> Color {
         Color(UIColor { traits in
             traits.userInterfaceStyle == .dark ? UIColor(dark) : UIColor(light)
@@ -236,6 +240,75 @@ public extension UI.Theme {
             case .radius(let value): return value
             case .full: return .greatestFiniteMagnitude
             }
+        }
+    }
+
+    /// Where a view sits in a joined row/column — `UI.ButtonGroup`'s own
+    /// shared-border/corner-collapsing scheme (real shadcn's `button-group.tsx`:
+    /// `[&>*:not(:first-child)]:rounded-l-none [&>*:not(:first-child)]:
+    /// border-l-0 [&>*:not(:last-child)]:rounded-r-none`, mirrored for
+    /// `vertical` with top/bottom in place of left/right). `UI.Toggle`
+    /// solves the identical problem for `ToggleGroup` with its own local,
+    /// horizontal-only `groupPosition` — this is the general (both
+    /// orientations) version, introduced for `ButtonGroup`; the two aren't
+    /// unified onto one type to avoid touching `Toggle.swift`'s already-
+    /// shipped, externally-vendored public API for an internal-only reason.
+    enum SegmentOrientation: Sendable {
+        case horizontal, vertical
+    }
+
+    enum SegmentPosition: Sendable {
+        case standalone, leading, middle, trailing
+    }
+
+    /// A rounded-rectangle perimeter with the "back" edge omitted — real
+    /// shadcn's border-collapsing trick for a joined segmented row/column
+    /// (`border-l-0` horizontally, `border-t-0` vertically): the segment
+    /// after the omitted edge doesn't draw it, so a shared seam between two
+    /// segments is traced exactly once, by the earlier segment's own edge,
+    /// not twice. `farCornerRadius` rounds the two corners AWAY from the
+    /// omitted edge (0 for a `.middle` segment, the group's radius for
+    /// `.trailing`); the two corners adjacent to the omitted edge are
+    /// always square, since that edge is never drawn regardless.
+    struct PartialBorderShape: Shape {
+        public var orientation: SegmentOrientation
+        public var farCornerRadius: CGFloat
+
+        public init(orientation: SegmentOrientation, farCornerRadius: CGFloat) {
+            self.orientation = orientation
+            self.farCornerRadius = farCornerRadius
+        }
+
+        public func path(in rect: CGRect) -> Path {
+            let r = min(farCornerRadius, min(rect.width, rect.height) / 2)
+            var path = Path()
+            switch orientation {
+            case .horizontal:
+                // Omit the left edge; trace top -> (rounded) top-right -> right -> (rounded) bottom-right -> bottom.
+                path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+                path.addLine(to: CGPoint(x: rect.maxX - r, y: rect.minY))
+                if r > 0 {
+                    path.addArc(center: CGPoint(x: rect.maxX - r, y: rect.minY + r), radius: r, startAngle: .degrees(-90), endAngle: .degrees(0), clockwise: false)
+                }
+                path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY - r))
+                if r > 0 {
+                    path.addArc(center: CGPoint(x: rect.maxX - r, y: rect.maxY - r), radius: r, startAngle: .degrees(0), endAngle: .degrees(90), clockwise: false)
+                }
+                path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+            case .vertical:
+                // Omit the top edge; trace left -> (rounded) bottom-left -> bottom -> (rounded) bottom-right -> right.
+                path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+                path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY - r))
+                if r > 0 {
+                    path.addArc(center: CGPoint(x: rect.minX + r, y: rect.maxY - r), radius: r, startAngle: .degrees(180), endAngle: .degrees(90), clockwise: true)
+                }
+                path.addLine(to: CGPoint(x: rect.maxX - r, y: rect.maxY))
+                if r > 0 {
+                    path.addArc(center: CGPoint(x: rect.maxX - r, y: rect.maxY - r), radius: r, startAngle: .degrees(90), endAngle: .degrees(0), clockwise: true)
+                }
+                path.addLine(to: CGPoint(x: rect.maxX, y: rect.minY))
+            }
+            return path
         }
     }
 

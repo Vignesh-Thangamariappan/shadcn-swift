@@ -23,6 +23,16 @@
       }
     },
     {
+      "name": "button-group",
+      "description": "Visually joins UI.Buttons into a segmented row or column, with shared corner rounding and collapsed borders",
+      "dependencies": ["tokens", "button"],
+      "platforms": {
+        "swiftui": {
+          "files": ["ButtonGroup.swift"]
+        }
+      }
+    },
+    {
       "name": "card",
       "description": "Card container with optional trailing action button",
       "dependencies": ["tokens", "button"],
@@ -279,6 +289,16 @@
       "platforms": {
         "swiftui": {
           "files": ["Spinner.swift"]
+        }
+      }
+    },
+    {
+      "name": "toast",
+      "description": "A queued notification banner fireable from anywhere via UI.ToastCenter (Environment-injected), rendered by .uiToastHost()",
+      "dependencies": ["tokens", "spinner"],
+      "platforms": {
+        "swiftui": {
+          "files": ["Toast.swift"]
         }
       }
     },

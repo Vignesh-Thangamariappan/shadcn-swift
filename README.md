@@ -7,7 +7,7 @@
 [![MIT license](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
 **shadcn/ui's model, ported to SwiftUI: own the component source, don't
-`npm install` it.** 47 themeable SwiftUI components you copy into your
+`npm install` it.** 49 themeable SwiftUI components you copy into your
 project — via a CLI or straight from your coding agent over MCP — and then
 edit freely, because it's your code now, not a dependency.
 
@@ -40,7 +40,7 @@ Three read-only tools — `list_components`, `get_component`, `resolve_plan`
 write tool, on purpose: the agent reads, then writes to your project itself
 using its normal file tools, so you always see and approve the diff.
 
-Full walkthrough, every flag, and a real call site for all 47 components:
+Full walkthrough, every flag, and a real call site for all 49 components:
 **[`docs/USAGE.md`](docs/USAGE.md)**.
 
 ## Why not just make an SPM package?
@@ -82,15 +82,15 @@ equivalent of shadcn.com's per-component demo page, minus the website.
 
 ## What's in the box
 
-**47 components**, zero third-party imports (one deliberate exception —
+**49 components**, zero third-party imports (one deliberate exception —
 `chart` uses Apple's own first-party Swift Charts, which ships with the SDK
 and adds no dependency):
 
 | Category | Components |
 |---|---|
-| Foundations | `tokens`, `button`, `card`, `badge`, `label`, `separator`, `avatar`, `kbd` |
+| Foundations | `tokens`, `button`, `button-group`, `card`, `badge`, `label`, `separator`, `avatar`, `kbd` |
 | Forms & input | `input`, `textarea`, `switch`, `toggle`, `checkbox`, `radio-group`, `slider`, `input-otp`, `field`, `input-group`, `select`, `combobox` |
-| Feedback | `alert`, `progress`, `skeleton`, `spinner`, `empty` |
+| Feedback | `alert`, `progress`, `skeleton`, `spinner`, `empty`, `toast` |
 | Navigation & disclosure | `tabs`, `accordion`, `collapsible`, `breadcrumb`, `pagination`, `sidebar` |
 | Overlays | `sheet`, `dialog`, `confirmation-dialog`, `popover`, `tooltip`, `dropdown-menu`, `context-menu`, `command` |
 | Data & media | `table`, `chart`, `calendar`, `date-picker`, `carousel`, `toggle-group`, `item`, `aspect-ratio` |

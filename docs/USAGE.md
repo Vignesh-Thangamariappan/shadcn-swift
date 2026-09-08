@@ -64,7 +64,7 @@ context-menu  (needs: tokens, dropdown-menu)
 ...
 ```
 
-(47 components today, not all shown here — this list changes; `shadcn-swift
+(49 components today, not all shown here — this list changes; `shadcn-swift
 list` is the source of truth, and section 4 below has a call site for each.)
 
 Add what you need — dependencies come along automatically:
@@ -239,21 +239,72 @@ Buttons size to their content, same as real shadcn — they don't stretch to
 fill their container by default. Wrap in `.frame(maxWidth: .infinity)`
 yourself if you want that.
 
+Icon-bearing convenience initializers size and space the icon to match real
+shadcn exactly (icon/label gap, tightened padding when an icon is present):
+
+```swift
+UI.Button("Download", icon: Image(systemName: "arrow.down.circle")) { download() }
+UI.Button("Next", trailingIcon: Image(systemName: "arrow.right"), variant: .outline) { next() }
+UI.Button(icon: Image(systemName: "plus")) { add() }   // icon-only, no title
+```
+
+`shape: .full` renders a pill (real shadcn's `rounded-full` override) — a
+real parameter, not `.clipShape(Capsule())` layered on afterward, since
+SwiftUI clip shapes intersect rather than replace:
+
+```swift
+UI.Button("Rounded full", shape: .full) { }
+```
+
+`shape:` is also available on `Card`, `Alert`, `InputGroup`, and `Input` —
+same reasoning, same override.
+
+### ButtonGroup
+
+Visually joins `UI.Button`s into a segmented row (or column) — shared
+corner rounding, collapsed borders between segments, matching real
+shadcn's `button-group.tsx`:
+
+```swift
+UI.ButtonGroup([
+    .init("Day") { setRange(.day) },
+    .init("Week") { setRange(.week) },
+    .init("Month") { setRange(.month) }
+])
+
+UI.ButtonGroup([
+    .init("Copy", icon: Image(systemName: "doc.on.doc")) { copy() },
+    .init("Delete", icon: Image(systemName: "trash"), variant: .destructive) { delete() }
+], orientation: .vertical)
+```
+
+Takes an explicit `[ButtonGroupItem]` array rather than arbitrary
+`@ViewBuilder` content — see `docs/STATUS.md` for why. `ButtonGroupText`
+(a static inline label) and `ButtonGroupSeparator` (a manual cluster
+divider) aren't built; both need the mixed, arbitrary content this
+array-based approach deliberately doesn't attempt.
+
 ### Card
 
 ```swift
 UI.Card(title: "Storage", actionTitle: "Manage", action: { openStorage() }) {
     Text("42 GB of 100 GB used")
 }
+
+UI.Card(shape: .full) { Text("Rounded full") }   // see Button's shape: note above
 ```
 
 ### Badge
+
+Six variants, matching real shadcn's stock `badge.tsx` exactly:
 
 ```swift
 UI.Badge("New")
 UI.Badge("Draft", variant: .secondary)
 UI.Badge("Failed", variant: .destructive)
 UI.Badge("Beta", variant: .outline)
+UI.Badge("Ghost", variant: .ghost)
+UI.Badge("Link", variant: .link)
 ```
 
 ### Input
@@ -310,6 +361,18 @@ UI.ToggleGroup(options: ["left", "center", "right"], selection: $alignment) {
 }
 
 UI.ToggleGroup(options: ["bold", "italic", "underline"], selection: $textStyles) { $0 }
+```
+
+Renders as a real joined segmented control by default (zero gap, shared
+collapsed borders, only the outer corners rounded — matching real shadcn's
+default `spacing={0}` look, not independently-rounded gapped toggles).
+`variant: .outline` gives the group a shared `shadow-xs` container shadow,
+same as real shadcn:
+
+```swift
+UI.ToggleGroup(options: ["left", "center", "right"], selection: $alignment, variant: .outline) {
+    ["left": "text.alignleft", "center": "text.aligncenter", "right": "text.alignright"][$0]!
+}
 ```
 
 ### Slider
@@ -407,6 +470,46 @@ UI.Field("Email", description: "We'll never share your email.") {
 
 UI.Field("Password", error: "Password must be at least 8 characters.") {
     UI.Input("Password", text: $password, isSecure: true, isInvalid: true)
+}
+```
+
+The full real shadcn `field.tsx` primitive family is here too — `FieldSet`
+(a `gap-6` group with a `FieldLegend` heading), `FieldGroup` (a `gap-7`
+stack of `FieldSet`s), `FieldContent`/`FieldTitle`/`FieldDescription` (for
+composing a custom control's own label block, e.g. next to a checkbox),
+`FieldSeparator` (an optionally-labeled divider), and `FieldError`.
+`FieldLabel(isCard:isSelected:onTap:)` reproduces real shadcn's "choice
+card" pattern (a whole bordered card that's tappable, not just the tiny
+embedded control) — real HTML `<label>` forwards a click to its control for
+free; SwiftUI doesn't, hence the explicit `onTap`:
+
+```swift
+@State private var isPro = true
+
+UI.FieldGroup {
+    UI.FieldSet {
+        UI.FieldLegend("Account")
+        UI.Field("Email", description: "We'll never share your email.") {
+            UI.Input("you@example.com", text: $email)
+        }
+    }
+
+    UI.FieldSeparator("or")
+
+    UI.FieldSet {
+        UI.FieldLegend("Plan", style: .label)
+        UI.FieldLabel(isCard: true, isSelected: isPro, onTap: { isPro.toggle() }) {
+            UI.Checkbox(isOn: $isPro)
+            UI.FieldContent {
+                UI.FieldTitle("Pro")
+                UI.FieldDescription("For growing teams.")
+            }
+        }
+    }
+
+    UI.Field("Notifications", orientation: .responsive) {   // .vertical (default) / .horizontal / .responsive
+        UI.Switch("Enabled", isOn: $notify)
+    }
 }
 ```
 
@@ -565,6 +668,32 @@ same shape as `UI.Tabs`/`UI.Accordion`:
 UI.Table(
     columns: [UI.TableColumn("Name"), UI.TableColumn("Status")],
     rowCount: people.count
+) { index in
+    HStack {
+        Text(people[index].name).frame(maxWidth: .infinity, alignment: .leading)
+        Text(people[index].status).frame(maxWidth: .infinity, alignment: .leading)
+    }
+}
+```
+
+`isRowSelected`/`caption`/`footer` are optional, additive parameters — a
+plain visual toggle per row (real shadcn's `data-[state=selected]` is just
+a CSS class, not interaction logic; this doesn't build tap-to-select
+machinery either), a muted caption below the table, and a `bg-muted/50`
+footer section:
+
+```swift
+UI.Table(
+    columns: [UI.TableColumn("Name"), UI.TableColumn("Status")],
+    rowCount: people.count,
+    isRowSelected: { index in index == selectedIndex },
+    caption: "A list of your team members.",
+    footer: {
+        HStack {
+            Text("Total").frame(maxWidth: .infinity, alignment: .leading)
+            Text("\(people.count)").frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
 ) { index in
     HStack {
         Text(people[index].name).frame(maxWidth: .infinity, alignment: .leading)
@@ -804,6 +933,58 @@ RowView(item)
 Both trigger on a gesture (long-press) rather than a binding you control, so
 — unlike the four above — their `#Preview` can only show the trigger at
 rest; long-press on a real device or simulator to see the revealed content.
+
+### Toast — fireable from anywhere, not tied to a local Binding
+
+Every other component above is a plain `View` or a modifier driven by a
+`Binding` you own. `Toast` is different on purpose: real shadcn's
+`toast("message")` is a free function callable from anywhere in the app,
+not a prop threaded down through the view tree — so this is too.
+
+1. Mount the host once, near your app's root:
+
+```swift
+struct RootView: View {
+    var body: some View {
+        ContentView()
+            .uiToastHost()   // position: .bottom by default — also .top, .topLeading, .bottomTrailing, etc.
+    }
+}
+```
+
+2. Fire a toast from anywhere else via the environment — no binding, no
+   prop drilling:
+
+```swift
+struct SaveButton: View {
+    @Environment(\.uiToastCenter) private var toast
+
+    var body: some View {
+        UI.Button("Save") {
+            save()
+            toast.success("Changes saved")
+        }
+    }
+}
+```
+
+`show(_:description:variant:action:duration:)` is the general call
+(`variant: .default` by default); `.success`/`.info`/`.warning`/`.error`
+are typed convenience wrappers matching real shadcn's `toast.success(...)`
+etc. exactly. `duration: 0` means "stays until dismissed" (real sonner's
+own convention) — pair it with `.loading` and a manual `toast.dismiss(id)`
+once your async work finishes:
+
+```swift
+toast.show("Event has been created", description: "Sunday, December 03, 2023 at 9:00 AM")
+toast.show("Event deleted", action: .init("Undo") { undoDelete() })
+```
+
+`toast.promise(...)` (real sonner's async loading→success/error lifecycle
+helper) isn't ported — no direct `async`/`await` analog worth forcing into
+this shape. See `docs/STATUS.md` for the full reasoning, including where
+the typed variants' colors actually come from (sonner's own stylesheet,
+not shadcn's theme tokens).
 
 ## 5. Seeing a component before you write any code
 
